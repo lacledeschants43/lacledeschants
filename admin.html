@@ -1125,6 +1125,10 @@ function setSyncStatus(state, msg) {
 }
 
 // ── CALENDRIER HEBDOMADAIRE ───────────────────────────────
+function toDateStr(d) {
+  return d.toISOString().split('T')[0];
+}
+
 let currentWeekStart = getWeekStart(new Date());
 
 function getWeekStart(date) {

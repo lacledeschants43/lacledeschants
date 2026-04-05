@@ -210,13 +210,18 @@
   }
   .table-sq:hover { box-shadow:0 4px 16px rgba(107,26,42,0.2); z-index:3; }
   .table-sq.dragging { opacity:0.75; cursor:grabbing; z-index:10; box-shadow:0 8px 24px rgba(0,0,0,0.18); }
-  .table-sq.libre { border-color:var(--bordeaux); background:var(--blanc); }
-  .table-sq.occupee { border-color:var(--success); background:#e8f5ee; }
+  .table-sq.libre { border-color:#2d7a4f; background:#e8f5ee; }
+  .table-sq.libre .table-num { color:#2d7a4f; }
+  .table-sq.occupee { border-color:#c0392b; background:#fdecea; }
   .table-sq.selected { border-color:var(--or); box-shadow:0 0 0 3px rgba(201,168,76,0.3); }
   .table-sq.terrace { border-style:dashed; opacity:0.85; }
+  .table-sq.rect-h { width:128px; height:64px; }
+  .table-sq.rect-v { width:64px; height:128px; }
+  .table-sq.rect-h .table-resa-name { max-width:120px; }
+  .table-sq.rect-v .table-resa-name { max-width:58px; }
 
   .table-num { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--bordeaux); line-height:1; }
-  .table-sq.occupee .table-num { color:var(--success); }
+  .table-sq.occupee .table-num { color:#c0392b; }
   .table-cap { font-size:0.62rem; font-weight:700; color:var(--gris); text-transform:uppercase; letter-spacing:0.05em; }
   .table-resa-name { font-size:0.58rem; font-weight:700; color:var(--success); text-align:center; max-width:58px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0 2px; }
 
@@ -384,10 +389,10 @@
     text-transform:uppercase; color:var(--gris); padding:6px 2px;
   }
   .month-cell {
-    border-radius:8px; padding:7px 6px; min-height:70px;
+    border-radius:8px; padding:8px 7px; min-height:100px;
     border:1.5px solid var(--gris-clair); background:var(--blanc);
     cursor:default; transition:all 0.15s;
-    display:flex; flex-direction:column; align-items:stretch; gap:3px;
+    display:flex; flex-direction:column; align-items:stretch; gap:4px;
   }
   .month-cell.has-resa { border-color:var(--bordeaux); cursor:pointer; background:rgba(107,26,42,0.03); }
   .month-cell.has-resa:hover { background:rgba(107,26,42,0.07); }
@@ -401,15 +406,17 @@
   .mc-num.today-num span { color:var(--blanc); background:var(--bordeaux); border-radius:4px; padding:1px 7px; display:inline-block; }
   .month-cell.has-resa .mc-num { color:var(--bordeaux); }
   .mc-mini-resa {
-    background:rgba(107,26,42,0.08); border-left:2px solid var(--bordeaux);
-    border-radius:3px; padding:2px 5px; font-size:0.6rem; font-weight:700;
-    color:var(--bordeaux); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    line-height:1.4;
+    background:rgba(107,26,42,0.07); border-left:3px solid var(--bordeaux);
+    border-radius:4px; padding:5px 7px; font-size:0.75rem;
+    color:var(--noir); line-height:1.4; cursor:pointer;
+    transition:background 0.15s;
   }
-  .mc-mini-resa.copied { background:rgba(45,122,79,0.1); border-left-color:var(--success); color:var(--success); opacity:0.75; }
-  .mc-mini-resa { cursor:pointer; }
-  .mc-mini-resa:hover { background:rgba(107,26,42,0.15); }
-  .mc-more { font-size:0.58rem; color:var(--gris); font-style:italic; text-align:center; margin-top:1px; }
+  .mc-mini-resa:hover { background:rgba(107,26,42,0.14); }
+  .mc-mini-resa.copied { background:rgba(45,122,79,0.1); border-left-color:var(--success); opacity:0.8; }
+  .mc-mini-resa-nom { font-weight:700; color:var(--bordeaux); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mc-mini-resa.copied .mc-mini-resa-nom { color:var(--success); }
+  .mc-mini-resa-couverts { font-size:0.7rem; color:var(--gris); font-weight:700; margin-top:1px; }
+  .mc-more { font-size:0.68rem; color:var(--gris); font-style:italic; text-align:center; margin-top:2px; }
 
   .month-label { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--bordeaux); margin-bottom:4px; }
   .month-nav { display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
@@ -447,9 +454,11 @@
   }
   .cal-day.today .cal-day-num { color:var(--bordeaux); }
   .cal-day-total {
-    font-size:0.68rem; font-weight:700; color:var(--gris);
+    font-size:0.72rem; font-weight:700; color:var(--bordeaux);
     text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;
+    opacity:0.85;
   }
+  .cal-day-total strong { font-weight:700; }
 
   /* ── MINI CARTE RESA ── */
   .mini-resa {
@@ -719,6 +728,17 @@
       <button class="btn-qf" id="qf-month" onclick="quickFilter('month')">📆 Ce mois-ci</button>
     </div>
 
+    <!-- Navigation jour (vue aujourd'hui) -->
+    <div class="week-nav" id="day-nav-bar">
+      <button class="btn-week" onclick="changeDay(-1)">&#8249;</button>
+      <div class="week-nav-title">
+        <span id="day-label-top">Jour</span>
+        <input type="date" id="day-date-pick" onchange="pickDay(this.value)" style="border:none;background:transparent;font-family:'Playfair Display',serif;font-size:1rem;color:var(--bordeaux);font-weight:700;text-align:center;cursor:pointer;outline:none;width:160px;">
+      </div>
+      <button class="btn-today" onclick="goToday()">Aujourd'hui</button>
+      <button class="btn-week" onclick="changeDay(1)">&#8250;</button>
+    </div>
+
     <!-- Navigation semaine (vue semaine) -->
     <div class="week-nav" id="week-nav-bar">
       <button class="btn-week" onclick="changeWeek(-1)">‹</button>
@@ -822,8 +842,8 @@
 
     <!-- Légende -->
     <div class="salle-legende" id="salle-legende" style="margin-bottom:12px;">
-      <span><span class="leg-dot" style="background:var(--blanc);border:2px solid var(--bordeaux)"></span>Libre</span>
-      <span><span class="leg-dot" style="background:#e8f5ee;border:2px solid var(--success)"></span>Occupée</span>
+      <span><span class="leg-dot" style="background:#e8f5ee;border:2px solid #2d7a4f"></span>Libre</span>
+      <span><span class="leg-dot" style="background:#fdecea;border:2px solid #c0392b"></span>Occupée</span>
       <span style="color:var(--gris);font-style:italic;">Cliquer sur une table pour assigner une réservation</span>
     </div>
 
@@ -837,6 +857,14 @@
           <input type="text" id="tp-num" placeholder="Ex: T1">
           <label>Capacité (pers.)</label>
           <input type="number" id="tp-cap" min="1" max="20" value="4">
+          <label>Forme</label>
+          <div class="tp-select-wrap">
+            <select id="tp-forme">
+              <option value="carre">Carré (2p)</option>
+              <option value="rect-h">Rectangle horizontal (4p)</option>
+              <option value="rect-v">Rectangle vertical (4p)</option>
+            </select>
+          </div>
           <label>Type</label>
           <div class="tp-select-wrap">
             <select id="tp-type">
@@ -1202,11 +1230,24 @@ function quickFilter(type) {
   document.querySelectorAll('.btn-qf').forEach(b => b.classList.remove('active'));
   const btn = $('qf-'+type);
   if (btn) btn.classList.add('active');
+  $('day-nav-bar').style.display   = type === 'today' ? 'flex' : 'none';
   $('week-nav-bar').style.display  = type === 'week'  ? 'flex' : 'none';
   $('month-nav-bar').style.display = type === 'month' ? 'block' : 'none';
   if (type === 'today')      { currentDayDate = new Date(); renderViewToday(); }
   else if (type === 'week')  { currentWeekStart = getWeekStart(new Date()); renderViewWeek(); }
   else if (type === 'month') { currentMonthDate = new Date(); renderViewMonth(); }
+}
+
+function changeDay(dir) {
+  currentDayDate = new Date(currentDayDate);
+  currentDayDate.setDate(currentDayDate.getDate() + dir);
+  renderViewToday();
+}
+
+function pickDay(val) {
+  if (!val) return;
+  currentDayDate = new Date(val + 'T12:00:00');
+  renderViewToday();
 }
 
 function changeWeek(dir) {
@@ -1260,15 +1301,21 @@ function buildResaCard(r, newId=null) {
 
 // ── VUE AUJOURD'HUI ───────────────────────────────────────
 function renderViewToday(newId=null) {
-  const todayStr = toDateStr(new Date());
-  const d = new Date();
+  const realTodayStr = toDateStr(new Date());
+  const d = new Date(currentDayDate);
+  d.setHours(12,0,0,0);
+  const dayStr = toDateStr(d);
   const JOURS_FULL = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
   const MOIS_LONG  = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const isToday = dayStr === realTodayStr;
   const label = `${JOURS_FULL[d.getDay()]} ${d.getDate()} ${MOIS_LONG[d.getMonth()]} ${d.getFullYear()}`;
-  const resas = allResas.filter(r=>r.date===todayStr).sort((a,b)=>(a.heure||'99').localeCompare(b.heure||'99'));
+  // Mettre à jour le date picker
+  $('day-date-pick').value = dayStr;
+  $('day-label-top').textContent = isToday ? "Aujourd\'hui" : "Jour sélectionné";
+  const resas = allResas.filter(r=>r.date===dayStr).sort((a,b)=>(a.heure||'99').localeCompare(b.heure||'99'));
   const totC = resas.reduce((s,r)=>s+r.couverts,0);
-  let html = `<div class="day-view-header"><span>${label}</span><span class="day-view-count">${resas.length} réservation${resas.length!==1?'s':''} · ${totC} couverts</span></div>`;
-  if (!resas.length) html += `<div class="empty-state"><div class="empty-icon">📋</div><p>Aucune réservation aujourd'hui.</p></div>`;
+  let html = `<div class="day-view-header"><span>${label}</span><span class="day-view-count">${resas.length} réservation${resas.length!==1?'s':''} · ${totC} couvert${totC>1?'s':''}</span></div>`;
+  if (!resas.length) html += `<div class="empty-state"><div class="empty-icon">📋</div><p>Aucune réservation ce jour.</p></div>`;
   else html += resas.map(r=>buildResaCard(r,newId)).join('');
   $('agenda-view').innerHTML = html;
   updateStats();
@@ -1294,9 +1341,10 @@ function renderViewWeek(newId=null) {
     const totC=dayResas.reduce((s,r)=>s+r.couverts,0), isEmpty=!dayResas.length;
     const cards=dayResas.map(r=>{
       const copied=!!r.copied;
-      return `<div class="mini-resa${copied?' copied':''}${newId===r.id?' new-flash':''}" id="mini-${r.id}" onclick="openDrawer(${r.id})">
-        <div class="mini-top"><div class="mini-name">${escHTML(r.nom)}</div><div class="mini-time">${r.heure?r.heure.slice(0,5).replace(':','h'):'—'}</div></div>
-        <div class="mini-couverts">👥 ${r.couverts} pers.</div>
+      const h=r.heure?r.heure.slice(0,5).replace(':','h'):null;
+      return `<div class="mc-mini-resa${copied?' copied':''}${newId===r.id?' new-flash':''}" id="mini-${r.id}" onclick="openDrawer(${r.id})" style="position:relative;">
+        <div class="mc-mini-resa-nom">${escHTML(r.nom)}</div>
+        <div class="mc-mini-resa-couverts">&#128101; ${r.couverts} couvert${r.couverts>1?'s':''}${h?' &middot; '+h:''}</div>
         <div class="mini-check${copied?' checked':''}" title="Recopié sur cahier" onclick="toggleCopied(event,${r.id})"></div>
       </div>`;
     }).join('');
@@ -1305,7 +1353,7 @@ function renderViewWeek(newId=null) {
         <span>${d.getDate()}</span>
         ${!isEmpty?`<button class="btn-print" style="font-size:0.7rem;padding:2px 6px;" onclick="event.stopPropagation();imprimerJour('${ds}')">🖨️</button>`:''}
       </div>
-      ${!isEmpty?`<div class="cal-day-total">${dayResas.length} résa · ${totC} cvts</div>`:''}
+      ${!isEmpty?`<div class="cal-day-total">${dayResas.length} résa · <strong>${totC} couvert${totC>1?'s':''}</strong></div>`:''}
       ${cards}
     </div>`;
   }).join('')}</div>`;
@@ -1338,8 +1386,11 @@ function renderViewMonth() {
     const sorted=[...resas].sort((a,b)=>(a.heure||'99').localeCompare(b.heure||'99'));
     const cls=['month-cell',hasResa?'has-resa':'',isToday?'is-today':''].filter(Boolean).join(' ');
     const miniCards=sorted.map(r=>{
-      const h=r.heure?r.heure.slice(0,5).replace(':','h')+' ':'';
-      return `<div class="mc-mini-resa${r.copied?' copied':''}" onclick="event.stopPropagation();openDrawer(${r.id})" title="${escHTML(r.nom)} · ${r.couverts}p">${h}${escHTML(r.nom)}</div>`;
+      const h=r.heure?r.heure.slice(0,5).replace(':','h'):null;
+      return `<div class="mc-mini-resa${r.copied?' copied':''}" onclick="event.stopPropagation();openDrawer(${r.id})" title="${escHTML(r.nom)} · ${r.couverts} couverts">
+        <div class="mc-mini-resa-nom">${escHTML(r.nom)}</div>
+        <div class="mc-mini-resa-couverts">&#128101; ${r.couverts} couvert${r.couverts>1?'s':''}${h?' &middot; '+h:''}</div>
+      </div>`;
     }).join('');
     const extra='';
     calHtml+=`<div class="${cls}" ${hasResa?`onclick="scrollToDay('${ds}')"`:''}>
@@ -1677,36 +1728,94 @@ let selectedTableId = null;
 let dragState = null;
 const SNAP = 10; // snap to grid px
 
-// Chargement/sauvegarde plan (localStorage pour la structure)
-function loadPlan() {
+// ── PLAN DE SALLE — SUPABASE ─────────────────────────────
+const PLAN_URL = 'https://zwjgenpxsjvzmxqoxepv.supabase.co/rest/v1/plan_salle';
+const PLAN_HEADERS = {
+  'apikey': API_KEY,
+  'Authorization': 'Bearer ' + API_KEY,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=representation,resolution=merge-duplicates'
+};
+
+const DEFAULT_TABLES = [
+  {id:1,num:'T1',cap:4,forme:'carre',type:'interieur',x:40,y:40},
+  {id:2,num:'T2',cap:4,forme:'carre',type:'interieur',x:130,y:40},
+  {id:3,num:'T3',cap:6,forme:'carre',type:'interieur',x:220,y:40},
+  {id:4,num:'T4',cap:4,forme:'carre',type:'interieur',x:40,y:140},
+  {id:5,num:'T5',cap:4,forme:'carre',type:'interieur',x:130,y:140},
+  {id:6,num:'T6',cap:6,forme:'carre',type:'interieur',x:220,y:140},
+  {id:7,num:'T7',cap:4,forme:'carre',type:'terrasse',x:40,y:260},
+  {id:8,num:'T8',cap:4,forme:'carre',type:'terrasse',x:130,y:260},
+];
+
+async function loadPlan() {
+  // Essai Supabase d'abord
+  try {
+    const r = await fetch(PLAN_URL + '?id=eq.1', {
+      headers: { 'apikey': API_KEY, 'Authorization': 'Bearer ' + API_KEY }
+    });
+    if (r.ok) {
+      const data = await r.json();
+      if (data.length && data[0].tables) {
+        tables = JSON.parse(data[0].tables);
+        localStorage.setItem('cdc_plan', JSON.stringify(tables)); // cache local
+        return;
+      }
+    }
+  } catch(e) {}
+  // Fallback localStorage
   try {
     const saved = localStorage.getItem('cdc_plan');
-    if (saved) tables = JSON.parse(saved);
-  } catch(e) { tables = []; }
-  if (!tables.length) {
-    // Plan par défaut — 8 tables
-    const defaults = [
-      {id:1,num:'T1',cap:4,type:'interieur',x:40,y:40},
-      {id:2,num:'T2',cap:4,type:'interieur',x:130,y:40},
-      {id:3,num:'T3',cap:6,type:'interieur',x:220,y:40},
-      {id:4,num:'T4',cap:4,type:'interieur',x:40,y:140},
-      {id:5,num:'T5',cap:4,type:'interieur',x:130,y:140},
-      {id:6,num:'T6',cap:6,type:'interieur',x:220,y:140},
-      {id:7,num:'T7',cap:4,type:'terrasse',x:40,y:260},
-      {id:8,num:'T8',cap:4,type:'terrasse',x:130,y:260},
-    ];
-    tables = defaults;
-    savePlanLocal();
-  }
+    if (saved) { tables = JSON.parse(saved); return; }
+  } catch(e) {}
+  // Plan par défaut
+  tables = DEFAULT_TABLES;
+  savePlanLocal();
+  savePlanRemote();
 }
 
 function savePlanLocal() {
   localStorage.setItem('cdc_plan', JSON.stringify(tables));
 }
 
-function savePlan() {
+// Auto-save silencieux vers Supabase (après drag, ajout, suppression)
+let _savePlanTimer = null;
+function savePlanRemote() {
+  clearTimeout(_savePlanTimer);
+  _savePlanTimer = setTimeout(async () => {
+    try {
+      await fetch(PLAN_URL, {
+        method: 'POST',
+        headers: PLAN_HEADERS,
+        body: JSON.stringify({ id: 1, tables: JSON.stringify(tables) })
+      });
+    } catch(e) {}
+  }, 800); // debounce 800ms pour regrouper les drags
+}
+
+async function savePlan() {
   savePlanLocal();
-  showToast('Plan sauvegardé ! ✓', 'success');
+  savePlanRemote();
+  const btn = $('btn-save-plan');
+  btn.textContent = '⏳ Sauvegarde…';
+  btn.disabled = true;
+  try {
+    const r = await fetch(PLAN_URL, {
+      method: 'POST',
+      headers: PLAN_HEADERS,
+      body: JSON.stringify({ id: 1, tables: JSON.stringify(tables) })
+    });
+    if (r.ok) {
+      showToast('Plan sauvegardé sur tous les appareils ! ✓', 'success');
+    } else {
+      throw new Error('HTTP ' + r.status);
+    }
+  } catch(e) {
+    showToast('Erreur réseau — plan sauvegardé localement seulement.', 'error');
+    console.error('savePlan error:', e);
+  }
+  btn.textContent = '💾 Sauvegarder';
+  btn.disabled = false;
 }
 
 // Chargement assignments depuis Supabase (colonne table_id)
@@ -1745,7 +1854,8 @@ async function renderSalle() {
 
   tables.forEach(t => {
     const el = document.createElement('div');
-    el.className = 'table-sq' + (t.type==='terrasse'?' terrace':'');
+    const formeClass = t.forme === 'rect-h' ? ' rect-h' : t.forme === 'rect-v' ? ' rect-v' : '';
+    el.className = 'table-sq' + formeClass + (t.type==='terrasse'?' terrace':'');
     el.id = 'tbl-'+t.id;
     el.style.left = t.x+'px';
     el.style.top  = t.y+'px';
@@ -1754,7 +1864,7 @@ async function renderSalle() {
     // Occupation
     const assignedResaId = Object.keys(assignments).find(tid => +tid === t.id);
     const resa = assignedResaId ? allResas.find(r => r.id === assignments[+assignedResaId]) : null;
-    if (resa) el.classList.add('occupee');
+    el.classList.add(resa ? 'occupee' : 'libre');
 
     el.innerHTML = `
       <div class="table-num">${escHTML(t.num)}</div>
@@ -1786,8 +1896,10 @@ function startDrag(e, id) {
     const r = canvas.getBoundingClientRect();
     let nx = ev.clientX - r.left - dragState.startX;
     let ny = ev.clientY - r.top  - dragState.startY;
-    nx = Math.max(0, Math.min(r.width-64,  Math.round(nx/SNAP)*SNAP));
-    ny = Math.max(0, Math.min(r.height-64, Math.round(ny/SNAP)*SNAP));
+    const tw = t.forme==='rect-h' ? 128 : 64;
+    const th = t.forme==='rect-v' ? 128 : 64;
+    nx = Math.max(0, Math.min(r.width-tw,  Math.round(nx/SNAP)*SNAP));
+    ny = Math.max(0, Math.min(r.height-th, Math.round(ny/SNAP)*SNAP));
     t.x = nx; t.y = ny;
     const el = $('tbl-'+id);
     el.style.left = nx+'px'; el.style.top = ny+'px';
@@ -1798,6 +1910,7 @@ function startDrag(e, id) {
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup', onUp);
     savePlanLocal();
+    savePlanRemote();
   };
   document.addEventListener('mousemove', onMove);
   document.addEventListener('mouseup', onUp);
@@ -1817,8 +1930,10 @@ function startDragTouch(e, id) {
     const tc = ev.touches[0];
     let nx = tc.clientX - r.left - dragState.startX;
     let ny = tc.clientY - r.top  - dragState.startY;
-    nx = Math.max(0, Math.min(r.width-64,  Math.round(nx/SNAP)*SNAP));
-    ny = Math.max(0, Math.min(r.height-64, Math.round(ny/SNAP)*SNAP));
+    const tw = t.forme==='rect-h' ? 128 : 64;
+    const th = t.forme==='rect-v' ? 128 : 64;
+    nx = Math.max(0, Math.min(r.width-tw,  Math.round(nx/SNAP)*SNAP));
+    ny = Math.max(0, Math.min(r.height-th, Math.round(ny/SNAP)*SNAP));
     t.x = nx; t.y = ny;
     const el = $('tbl-'+id);
     el.style.left = nx+'px'; el.style.top = ny+'px';
@@ -1829,6 +1944,7 @@ function startDragTouch(e, id) {
     canvas.removeEventListener('touchmove', onMove);
     canvas.removeEventListener('touchend', onUp);
     savePlanLocal();
+    savePlanRemote();
   };
   canvas.addEventListener('touchmove', onMove, {passive:false});
   canvas.addEventListener('touchend', onUp);
@@ -1841,9 +1957,10 @@ function selectTable(id) {
   // Update panel
   $('tp-title').textContent = 'Table ' + t.num;
   if (salleMode === 'edit') {
-    $('tp-num').value = t.num;
-    $('tp-cap').value = t.cap;
-    $('tp-type').value = t.type;
+    $('tp-num').value   = t.num;
+    $('tp-cap').value   = t.cap;
+    $('tp-forme').value = t.forme || 'carre';
+    $('tp-type').value  = t.type;
   } else {
     // Remplir le select réservations du jour
     const dateStr = $('salle-date').value;
@@ -1888,8 +2005,9 @@ document.addEventListener('click', e => {
 function ajouterTable() {
   const newId = Date.now();
   const num = 'T' + (tables.length + 1);
-  tables.push({ id: newId, num, cap: 4, type: 'interieur', x: 40, y: 40 });
+  tables.push({ id: newId, num, cap: 4, type: 'interieur', forme: 'carre', x: 40, y: 40 });
   savePlanLocal();
+  savePlanRemote();
   renderSalle();
   selectTable(newId);
 }
@@ -1898,10 +2016,12 @@ function saveTableProps() {
   const t = tables.find(x => x.id === selectedTableId);
   if (!t) return;
   const keepId = selectedTableId;
-  t.num  = $('tp-num').value.trim() || t.num;
-  t.cap  = +$('tp-cap').value || 4;
-  t.type = $('tp-type').value;
+  t.num   = $('tp-num').value.trim() || t.num;
+  t.cap   = +$('tp-cap').value || 4;
+  t.forme = $('tp-forme').value;
+  t.type  = $('tp-type').value;
   savePlanLocal();
+  savePlanRemote();
   renderSalle();
   // Re-sélectionner après le rendu pour garder le panel ouvert
   selectTable(keepId);
@@ -1915,6 +2035,7 @@ function supprimerTable() {
   tables = tables.filter(x => x.id !== selectedTableId);
   closeTablePanel();
   savePlanLocal();
+  savePlanRemote();
   renderSalle();
   showToast('Table supprimée.', 'error');
 }
@@ -1984,8 +2105,8 @@ async function desassignerTable() {
 }
 
 // ── INIT SALLE ────────────────────────────────────────────
-function initSalle() {
-  loadPlan();
+async function initSalle() {
+  await loadPlan();
   $('salle-date').value = new Date().toISOString().split('T')[0];
   setMode('service');
 }
@@ -2009,9 +2130,10 @@ function verifierMDP() {
   }
 }
 
-function demarrerApp() {
-  loadPlan();
-  // Démarre en vue "Aujourd'hui", barre semaine cachée
+async function demarrerApp() {
+  await loadPlan();
+  // Démarre en vue "Aujourd'hui"
+  $('day-nav-bar').style.display   = 'flex';
   $('week-nav-bar').style.display  = 'none';
   $('month-nav-bar').style.display = 'none';
   poll();

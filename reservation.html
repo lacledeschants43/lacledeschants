@@ -172,8 +172,9 @@
           <div class="sw"><select id="heure"><option value="">— Sans préférence —</option></select></div>
         </div>
         <div class="fg">
-          <label for="tel">Téléphone</label>
+          <label for="tel">Téléphone <span class="req">*</span></label>
           <input type="tel" id="tel" placeholder="06 xx xx xx xx" autocomplete="tel">
+          <span class="ferr" id="e-tel">Veuillez saisir votre numéro de téléphone.</span>
         </div>
         <div class="fg full">
           <label for="comment">Message</label>
@@ -272,7 +273,8 @@ async function soumettre() {
   let ok = true;
   [{id:'nom',err:'e-nom',t:v=>v.trim().length>=2},
    {id:'date',err:'e-date',t:v=>!!v},
-   {id:'couverts',err:'e-couverts',t:v=>+v>=1&&+v<=75}
+   {id:'couverts',err:'e-couverts',t:v=>+v>=1&&+v<=75},
+   {id:'tel',err:'e-tel',t:v=>v.trim().length>=8}
   ].forEach(c=>{
     const el=$(c.id),er=$(c.err);
     if(!c.t(el.value)){el.classList.add('inv');er.classList.add('v');ok=false;}
@@ -289,7 +291,7 @@ async function soumettre() {
     date:    $('date').value,
     couverts:+$('couverts').value,
     heure:   $('heure').value||null,
-    tel:     $('tel').value.trim()||null,
+    tel:     $('tel').value.trim(),
     comment: $('comment').value.trim()||null,
   };
 

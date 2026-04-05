@@ -333,8 +333,13 @@
     font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--bordeaux);
     margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;
     flex-wrap:wrap; gap:8px;
+    border-bottom:2px solid var(--bordeaux); padding-bottom:8px;
   }
   .day-view-count { font-family:'Lato',sans-serif; font-size:0.78rem; color:var(--gris); font-weight:400; }
+  #agenda-view .resa-card { margin-bottom:8px; animation:fadeIn 0.3s ease; }
+  #agenda-view .resa-card .mini-check.checked { background:var(--success); border-color:var(--success); }
+  #agenda-view .resa-card .mini-check.checked::after { content:'✓'; color:white; font-size:0.65rem; font-weight:900; }
+  .day-group { margin-bottom:28px; }
 
   /* Vue mois */
   .month-grid {
@@ -1185,22 +1190,23 @@ function updateStats() {
 
 function buildResaCard(r, newId=null) {
   const copied = !!r.copied;
-  return `<div class="resa-card${newId===r.id?' new-flash':''}" id="card-${r.id}" style="margin-bottom:8px;">
-    <div class="resa-time">${r.heure?r.heure.slice(0,5).replace(':','h'):'—'}</div>
-    <div class="resa-main">
-      <div class="resa-name">${escHTML(r.nom)}</div>
-      <div class="resa-meta">
-        <span class="couverts">👥 ${r.couverts} pers.</span>
-        ${r.tel?`<span>📞 ${escHTML(r.tel)}</span>`:''}
+  return `
+    <div class="resa-card${newId===r.id?' new-flash':''}" id="card-${r.id}">
+      <div class="resa-time">${r.heure?r.heure.slice(0,5).replace(':','h'):'—'}</div>
+      <div class="resa-main">
+        <div class="resa-name">${escHTML(r.nom)}</div>
+        <div class="resa-meta">
+          <span class="couverts">👥 ${r.couverts} pers.</span>
+          ${r.tel?`<span>📞 ${escHTML(r.tel)}</span>`:''}
+        </div>
+        ${r.comment?`<div class="resa-comment">💬 ${escHTML(r.comment)}</div>`:''}
       </div>
-      ${r.comment?`<div class="resa-comment">💬 ${escHTML(r.comment)}</div>`:''}
-    </div>
-    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-      <div class="mini-check${copied?' checked':''}" title="Recopié sur cahier" onclick="toggleCopied(event,${r.id})"></div>
-      <button class="btn-edit" onclick="openEdit(${r.id})">✏️</button>
-      <button class="btn-del" onclick="deleteResa(${r.id},'${escHTML(r.nom)}')">✕</button>
-    </div>
-  </div>`;
+      <div class="card-actions">
+        <div class="mini-check${copied?' checked':''}" title="Recopié sur cahier" onclick="toggleCopied(event,${r.id})" style="width:18px;height:18px;border:1.5px solid var(--gris-clair);border-radius:3px;background:var(--blanc);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;"></div>
+        <button class="btn-edit" onclick="openEdit(${r.id})">✏️ Modifier</button>
+        <button class="btn-del" onclick="deleteResa(${r.id},'${escHTML(r.nom)}')">✕</button>
+      </div>
+    </div>`;
 }
 
 // ── VUE AUJOURD'HUI ───────────────────────────────────────

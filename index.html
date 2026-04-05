@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>La Clé des Chants — Buffet à volonté · La Chaise-Dieu</title>
+<title id="page-title">La Clé des Chants — Buffet à volonté · La Chaise-Dieu</title>
 <meta name="description" content="Restaurant buffet à volonté français et cuisine du monde à La Chaise-Dieu, Haute-Loire. Ouvert 7j/7 de 11h45 à 14h.">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
@@ -18,7 +18,7 @@
   .nr .cta:hover{background:var(--bxl)!important;}
   @media(max-width:600px){nav{padding:0 18px;}.nr a:not(.cta){display:none;}.nr{gap:0;}}
   .hero{height:100vh;min-height:580px;position:relative;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;}
-  .hbg{position:absolute;inset:0;background:url('https://lh3.googleusercontent.com/p/AF1QipNCGi55ojuTSHnbZpIjpf3Wix8Z4A4E8JqVozHe=s680-w680-h510-rw') center/cover;transform:scale(1.07);transition:transform 9s ease-out;}
+  .hbg{position:absolute;inset:0;background-size:cover;background-position:center;transform:scale(1.07);transition:transform 9s ease-out;}
   .hbg.z{transform:scale(1);}
   .hov{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(26,10,18,.48) 0%,rgba(74,15,28,.7) 55%,rgba(26,10,18,.88) 100%);}
   .hc{position:relative;z-index:2;padding:0 24px;max-width:820px;}
@@ -106,10 +106,10 @@
   <div class="hbg" id="hbg"></div>
   <div class="hov"></div>
   <div class="hc">
-    <div class="horn">Buffet à volonté · La Chaise-Dieu</div>
-    <h1 class="ht">Une table,<br><em>mille saveurs</em></h1>
+    <div class="horn" id="hero-surtitre">Buffet à volonté · La Chaise-Dieu</div>
+    <h1 class="ht"><span id="hero-titre1">Une table,</span><br><em id="hero-titre2">mille saveurs</em></h1>
     <div class="hs"></div>
-    <p class="hsub">Cuisine française &amp; du monde · 75 couverts<br>Ouvert 7 jours sur 7 · 11h45 – 14h00</p>
+    <p class="hsub" id="hero-sous-titre">Cuisine française &amp; du monde · 75 couverts<br>Ouvert 7 jours sur 7 · 11h45 – 14h00</p>
     <div class="hb">
       <a href="reservation.html" class="bp bp1">Réserver une table</a>
       <a href="#concept" class="bp bp2">Découvrir</a>
@@ -118,24 +118,24 @@
   <div class="hscr">Défiler</div>
 </div>
 <div class="band">
-  <div class="bi"><div class="bii">🕐</div><div><span class="bil">Horaires</span><span class="biv">11h45 – 14h00</span></div></div>
-  <div class="bi"><div class="bii">📅</div><div><span class="bil">Ouverture</span><span class="biv">Lundi – Dimanche</span></div></div>
-  <div class="bi"><div class="bii">👥</div><div><span class="bil">Capacité</span><span class="biv">75 couverts</span></div></div>
-  <div class="bi"><div class="bii">📍</div><div><span class="bil">Adresse</span><span class="biv">La Chaise-Dieu, 43</span></div></div>
+  <div class="bi"><div class="bii">🕐</div><div><span class="bil">Horaires</span><span class="biv" id="info-horaires">11h45 – 14h00</span></div></div>
+  <div class="bi"><div class="bii">📅</div><div><span class="bil">Ouverture</span><span class="biv" id="info-ouverture">Lundi – Dimanche</span></div></div>
+  <div class="bi"><div class="bii">👥</div><div><span class="bil">Capacité</span><span class="biv" id="info-capacite">75 couverts</span></div></div>
+  <div class="bi"><div class="bii">📍</div><div><span class="bil">Adresse</span><span class="biv" id="info-adresse">La Chaise-Dieu, 43</span></div></div>
 </div>
 <section class="concept" id="concept">
   <div class="inn">
     <div class="cg">
       <div class="ciw r">
-        <img class="ci" src="https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=800&q=80" alt="Salle du restaurant" loading="lazy">
-        <div class="cbadge">75<small>couverts</small></div>
+        <img class="ci" id="concept-img" src="https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=800&q=80" alt="Salle du restaurant" loading="lazy">
+        <div class="cbadge"><span id="badge-nb">75</span><small id="badge-txt">couverts</small></div>
       </div>
       <div>
-        <div class="sl r">Le restaurant</div>
-        <h2 class="st r d1">Un buffet qui<br><em>fait voyager</em></h2>
+        <div class="sl r" id="concept-surtitre">Le restaurant</div>
+        <h2 class="st r d1" id="concept-titre">Un buffet qui<br><em>fait voyager</em></h2>
         <div class="ss r d2"></div>
-        <p class="stx r d2">La Clé des Chants vous accueille dans un cadre chaleureux au cœur de La Chaise-Dieu, en Haute-Loire. Notre buffet à volonté marie les saveurs de la cuisine française traditionnelle aux influences du monde entier.</p>
-        <p class="stx r d3" style="margin-top:11px;">Des plats préparés chaque jour avec soin, des produits de qualité, et une atmosphère conviviale — venez vous régaler en famille, entre amis ou entre collègues.</p>
+        <p class="stx r d2" id="concept-texte1">La Clé des Chants vous accueille dans un cadre chaleureux au cœur de La Chaise-Dieu, en Haute-Loire. Notre buffet à volonté marie les saveurs de la cuisine française traditionnelle aux influences du monde entier.</p>
+        <p class="stx r d3" id="concept-texte2" style="margin-top:11px;">Des plats préparés chaque jour avec soin, des produits de qualité, et une atmosphère conviviale — venez vous régaler en famille, entre amis ou entre collègues.</p>
         <div class="atouts">
           <div class="at r d1"><div class="ati">🇫🇷</div><div class="att">Cuisine française</div><div class="atx">Plats du terroir revisités</div></div>
           <div class="at r d2"><div class="ati">🌍</div><div class="att">Cuisine du monde</div><div class="atx">Asie, Maghreb et ailleurs</div></div>
@@ -152,34 +152,34 @@
     <h2 class="st r d1">Des plats, <em>des moments</em></h2>
     <div class="ss r d2"></div>
     <div class="gg r">
-      <div class="gi gm"><img class="gimg" src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=900&q=80" alt="Buffet" loading="lazy"></div>
-      <div class="gi"><img class="gimg" src="https://images.unsplash.com/photo-1600891964092-4316c288032e?w=500&q=80" alt="Plat chaud" loading="lazy"></div>
-      <div class="gi"><img class="gimg" src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=500&q=80" alt="Plat coloré" loading="lazy"></div>
-      <div class="gi"><img class="gimg" src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=500&q=80" alt="Dessert" loading="lazy"></div>
-      <div class="gi"><img class="gimg" src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&q=80" alt="Salle" loading="lazy"></div>
+      <div class="gi gm"><img class="gimg" id="gal-img1" src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=900&q=80" alt="Buffet" loading="lazy"></div>
+      <div class="gi"><img class="gimg" id="gal-img2" src="https://images.unsplash.com/photo-1600891964092-4316c288032e?w=500&q=80" alt="Plat chaud" loading="lazy"></div>
+      <div class="gi"><img class="gimg" id="gal-img3" src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=500&q=80" alt="Plat coloré" loading="lazy"></div>
+      <div class="gi"><img class="gimg" id="gal-img4" src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=500&q=80" alt="Dessert" loading="lazy"></div>
+      <div class="gi"><img class="gimg" id="gal-img5" src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&q=80" alt="Salle" loading="lazy"></div>
     </div>
     <p class="gnote">Photos illustratives — à remplacer par vos propres photos</p>
   </div>
 </section>
 <section class="formule" id="formule">
   <div class="inn">
-    <div class="sl">Notre formule</div>
-    <h2 class="st r">Le buffet à volonté,<br><em>sans retenue</em></h2>
+    <div class="sl" id="formule-surtitre">Notre formule</div>
+    <h2 class="st r" id="formule-titre">Le buffet à volonté,<br><em>sans retenue</em></h2>
     <div class="ss"></div>
-    <p class="stx r">Servez-vous autant de fois que vous le souhaitez parmi une large sélection de plats chauds, salades, fromages et desserts. Une formule unique, au prix unique.</p>
+    <p class="stx r" id="formule-texte">Servez-vous autant de fois que vous le souhaitez parmi une large sélection de plats chauds, salades, fromages et desserts. Une formule unique, au prix unique.</p>
     <div class="fc">
-      <div class="fcard r d1"><div class="ficon">🥗</div><div class="ftit">Entrées &amp; salades</div><div class="ftx">Crudités, charcuteries, salades composées, soupes du jour</div></div>
-      <div class="fcard hl r d2"><div class="ficon">🍽️</div><div class="ftit">Plats chauds</div><div class="ftx">Cuisine française &amp; du monde, viandes, poissons, accompagnements</div></div>
-      <div class="fcard r d3"><div class="ficon">🍮</div><div class="ftit">Desserts</div><div class="ftx">Pâtisseries maison, fruits, fromages, café</div></div>
+      <div class="fcard r d1"><div class="ficon">🥗</div><div class="ftit" id="carte1-titre">Entrées &amp; salades</div><div class="ftx" id="carte1-texte">Crudités, charcuteries, salades composées, soupes du jour</div></div>
+      <div class="fcard hl r d2"><div class="ficon">🍽️</div><div class="ftit" id="carte2-titre">Plats chauds</div><div class="ftx" id="carte2-texte">Cuisine française &amp; du monde, viandes, poissons, accompagnements</div></div>
+      <div class="fcard r d3"><div class="ficon">🍮</div><div class="ftit" id="carte3-titre">Desserts</div><div class="ftx" id="carte3-texte">Pâtisseries maison, fruits, fromages, café</div></div>
     </div>
   </div>
 </section>
 <section class="ctasec" id="reserver">
   <div class="inn">
-    <div class="sl r">Réservation</div>
-    <h2 class="st r d1">Venez nous rendre visite</h2>
+    <div class="sl r" id="cta-surtitre">Réservation</div>
+    <h2 class="st r d1" id="cta-titre">Venez nous rendre visite</h2>
     <div class="ss r d2"></div>
-    <p class="stx r d2">Réservez votre table en quelques secondes. La réservation est recommandée pour garantir votre place, notamment le week-end.</p>
+    <p class="stx r d2" id="cta-texte">Réservez votre table en quelques secondes. La réservation est recommandée pour garantir votre place, notamment le week-end.</p>
     <div style="margin-top:30px" class="r d3"><a href="reservation.html" class="btnc">Réserver ma table</a></div>
   </div>
 </section>
@@ -189,10 +189,10 @@
       <div class="flogo">La Clé des Chants</div>
       <p class="fdesc">Buffet à volonté français &amp; cuisine du monde.<br>Une expérience gourmande au cœur de la Haute-Loire.</p>
     </div>
-    <div class="fc2"><div class="fct">Horaires</div><p>Lundi – Dimanche<br>11h45 – 14h00</p></div>
+    <div class="fc2"><div class="fct">Horaires</div><p id="footer-horaires">Lundi – Dimanche<br>11h45 – 14h00</p></div>
     <div class="fc2">
       <div class="fct">Accès</div>
-      <p>La Chaise-Dieu<br>Haute-Loire (43)</p>
+      <p id="footer-adresse">La Chaise-Dieu<br>Haute-Loire (43)</p>
       <a href="reservation.html" style="margin-top:9px;color:var(--or)">Réserver →</a>
     </div>
   </div>
@@ -202,10 +202,115 @@
   </div>
 </footer>
 <script>
-window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('on',window.scrollY>50);});
-window.addEventListener('load',()=>{document.getElementById('hbg').classList.add('z');});
-const ob=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('v');ob.unobserve(x.target);}});},{threshold:.1});
-document.querySelectorAll('.r').forEach(el=>ob.observe(el));
+const SITE_API = 'https://zwjgenpxsjvzmxqoxepv.supabase.co/rest/v1/site_config';
+const SITE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3amdlbnB4c2p2em14cW94ZXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMDQ1NTYsImV4cCI6MjA5MDg4MDU1Nn0.GtQx5lQbFmPFvH_ji-4T9bZ3xbL8DPYpUanKy_D4Z9c';
+
+function set(id, val) { const el = document.getElementById(id); if (el && val) el.textContent = val; }
+function setSrc(id, url) { const el = document.getElementById(id); if (el && url) el.src = url; }
+function setCSSVar(name, val) { if (val) document.documentElement.style.setProperty(name, val); }
+
+function applyConfig(c) {
+  // Couleurs
+  if (c.couleurs) {
+    setCSSVar('--bx',  c.couleurs.bordeaux);
+    setCSSVar('--bxl', c.couleurs.bordeaux ? c.couleurs.bordeaux.replace(/^#/, '') : null);
+    setCSSVar('--or',  c.couleurs.or);
+    setCSSVar('--orl', c.couleurs.or);
+    // Recalculer les variantes bordeaux
+    if (c.couleurs.bordeaux) {
+      setCSSVar('--bx',  c.couleurs.bordeaux);
+      // Variante claire (+20% luminosité approximée)
+      setCSSVar('--bxd', shadeColor(c.couleurs.bordeaux, -20));
+      setCSSVar('--bxl', shadeColor(c.couleurs.bordeaux, +20));
+    }
+  }
+  // Hero
+  if (c.hero) {
+    set('hero-surtitre', c.hero.surtitre);
+    set('hero-titre1',   c.hero.titre_ligne1);
+    set('hero-titre2',   c.hero.titre_ligne2);
+    if (c.hero.sous_titre) {
+      const el = document.getElementById('hero-sous-titre');
+      if (el) el.innerHTML = c.hero.sous_titre.replace(/\n/g, '<br>');
+    }
+    if (c.hero.image_url) document.getElementById('hbg').style.backgroundImage = `url('${c.hero.image_url}')`;
+  }
+  // Infos band
+  if (c.infos) {
+    set('info-horaires',  c.infos.horaires);
+    set('info-ouverture', c.infos.ouverture);
+    set('info-capacite',  c.infos.capacite);
+    set('info-adresse',   c.infos.adresse);
+  }
+  // Concept
+  if (c.concept) {
+    set('concept-surtitre', c.concept.surtitre);
+    set('concept-titre',    c.concept.titre);
+    set('concept-texte1',   c.concept.texte1);
+    set('concept-texte2',   c.concept.texte2);
+    set('badge-nb',         c.concept.badge_nb);
+    set('badge-txt',        c.concept.badge_txt);
+    setSrc('concept-img',   c.concept.image_url);
+  }
+  // Galerie
+  if (c.galerie) {
+    setSrc('gal-img1', c.galerie.img1);
+    setSrc('gal-img2', c.galerie.img2);
+    setSrc('gal-img3', c.galerie.img3);
+    setSrc('gal-img4', c.galerie.img4);
+    setSrc('gal-img5', c.galerie.img5);
+  }
+  // Formule
+  if (c.formule) {
+    set('formule-surtitre', c.formule.surtitre);
+    set('formule-titre',    c.formule.titre);
+    set('formule-texte',    c.formule.texte);
+    set('carte1-titre',     c.formule.carte1_titre);
+    set('carte1-texte',     c.formule.carte1_texte);
+    set('carte2-titre',     c.formule.carte2_titre);
+    set('carte2-texte',     c.formule.carte2_texte);
+    set('carte3-titre',     c.formule.carte3_titre);
+    set('carte3-texte',     c.formule.carte3_texte);
+  }
+  // CTA
+  if (c.cta) {
+    set('cta-surtitre', c.cta.surtitre);
+    set('cta-titre',    c.cta.titre);
+    set('cta-texte',    c.cta.texte);
+  }
+  // Footer
+  if (c.infos) {
+    const fh = document.getElementById('footer-horaires');
+    if (fh) fh.innerHTML = `${c.infos.ouverture}<br>${c.infos.horaires}`;
+  }
+}
+
+function shadeColor(hex, pct) {
+  const num = parseInt(hex.replace('#',''), 16);
+  const r = Math.min(255, Math.max(0, (num >> 16) + Math.round(2.55 * pct)));
+  const g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + Math.round(2.55 * pct)));
+  const b = Math.min(255, Math.max(0, (num & 0xff) + Math.round(2.55 * pct)));
+  return '#' + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+async function loadSiteConfig() {
+  try {
+    const r = await fetch(SITE_API + '?id=eq.1', {
+      headers: { 'apikey': SITE_KEY, 'Authorization': 'Bearer ' + SITE_KEY }
+    });
+    if (r.ok) {
+      const data = await r.json();
+      if (data.length && data[0].config) applyConfig(data[0].config);
+    }
+  } catch(e) {}
+}
+
+window.addEventListener('scroll', () => { document.getElementById('nav').classList.toggle('on', window.scrollY > 50); });
+window.addEventListener('load', () => { document.getElementById('hbg').classList.add('z'); });
+const ob = new IntersectionObserver(e => { e.forEach(x => { if (x.isIntersecting) { x.target.classList.add('v'); ob.unobserve(x.target); } }); }, { threshold: .1 });
+document.querySelectorAll('.r').forEach(el => ob.observe(el));
+
+loadSiteConfig();
 </script>
 </body>
 </html>

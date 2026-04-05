@@ -543,6 +543,41 @@
   .btn-cancel { flex:1; background:none; color:var(--gris); border:1.5px solid var(--gris-clair); border-radius:6px; padding:12px; font-family:'Lato',sans-serif; font-size:0.85rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:all 0.2s; }
   .btn-cancel:hover { border-color:var(--noir); color:var(--noir); }
 
+  /* ── ONGLET SITE ── */
+  .site-wrapper { max-width:900px; margin:0 auto; padding:32px 16px 64px; }
+  .site-section-title { font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--bordeaux); margin:28px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--bordeaux); }
+  .site-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:8px; }
+  @media(max-width:600px){ .site-grid{grid-template-columns:1fr;} }
+  .site-field { display:flex; flex-direction:column; gap:5px; }
+  .site-field.full { grid-column:1/-1; }
+  .site-field label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--gris); }
+  .site-field input, .site-field textarea {
+    border:1.5px solid var(--gris-clair); border-radius:6px; padding:10px 12px;
+    font-family:'Lato',sans-serif; font-size:0.9rem; color:var(--noir);
+    background:var(--creme); outline:none; transition:border-color 0.2s;
+    width:100%;
+  }
+  .site-field input[type="color"] { padding:4px 6px; height:38px; cursor:pointer; }
+  .site-field input:focus, .site-field textarea:focus { border-color:var(--bordeaux); background:var(--blanc); }
+  .site-field textarea { resize:vertical; min-height:70px; }
+  .site-img-preview { width:100%; height:120px; object-fit:cover; border-radius:6px; margin-top:4px; border:1px solid var(--gris-clair); }
+  .btn-site-save {
+    background:var(--bordeaux); color:var(--blanc); border:none; border-radius:8px;
+    padding:14px 32px; font-family:'Lato',sans-serif; font-size:0.9rem; font-weight:700;
+    letter-spacing:0.12em; text-transform:uppercase; cursor:pointer;
+    transition:background 0.2s; box-shadow:0 4px 14px rgba(107,26,42,0.25);
+    display:flex; align-items:center; gap:8px;
+  }
+  .btn-site-save:hover { background:var(--bordeaux-light); }
+  .btn-site-save:disabled { opacity:0.6; cursor:not-allowed; }
+  .site-save-bar {
+    position:sticky; bottom:0; background:var(--blanc);
+    padding:14px 0; border-top:1px solid var(--gris-clair);
+    display:flex; align-items:center; gap:14px; z-index:10;
+  }
+  .site-saved-msg { font-size:0.82rem; color:var(--success); display:none; }
+  .site-saved-msg.visible { display:block; }
+
   ::-webkit-scrollbar { width:6px; }
   ::-webkit-scrollbar-track { background:var(--creme); }
   ::-webkit-scrollbar-thumb { background:var(--gris-clair); border-radius:3px; }
@@ -655,6 +690,7 @@
     </button>
     <button class="nav-tab" onclick="showTab('clients',this)">Clients</button>
     <button class="nav-tab" onclick="showTab('salle',this)">Plan de salle</button>
+    <button class="nav-tab" onclick="showTab('site',this)">🌐 Site</button>
   </div>
 </nav>
 
@@ -891,6 +927,109 @@
 </div>
 
 <!-- ── ZONE D'IMPRESSION TICKET ── -->
+
+<!-- ── SECTION SITE ── -->
+<div class="section" id="section-site">
+  <div class="site-wrapper">
+
+    <div class="site-section-title">🎨 Couleurs</div>
+    <div class="site-grid">
+      <div class="site-field"><label>Couleur bordeaux</label><input type="color" id="sc-bordeaux" value="#6B1A2A"></div>
+      <div class="site-field"><label>Couleur or</label><input type="color" id="sc-or" value="#C9A84C"></div>
+    </div>
+
+    <div class="site-section-title">🦸 Hero (bannière principale)</div>
+    <div class="site-grid">
+      <div class="site-field"><label>Surtitre</label><input type="text" id="sc-hero-surtitre"></div>
+      <div class="site-field"><label>Titre ligne 1</label><input type="text" id="sc-hero-titre1"></div>
+      <div class="site-field"><label>Titre ligne 2 (italique)</label><input type="text" id="sc-hero-titre2"></div>
+      <div class="site-field"><label>Sous-titre</label><input type="text" id="sc-hero-sous-titre"></div>
+      <div class="site-field full">
+        <label>URL de l'image de fond</label>
+        <input type="text" id="sc-hero-img" placeholder="https://..." oninput="previewImg('sc-hero-img','prev-hero-img')">
+        <img id="prev-hero-img" class="site-img-preview" src="" style="display:none">
+      </div>
+    </div>
+
+    <div class="site-section-title">ℹ️ Informations pratiques</div>
+    <div class="site-grid">
+      <div class="site-field"><label>Horaires</label><input type="text" id="sc-horaires"></div>
+      <div class="site-field"><label>Jours d'ouverture</label><input type="text" id="sc-ouverture"></div>
+      <div class="site-field"><label>Capacité</label><input type="text" id="sc-capacite"></div>
+      <div class="site-field"><label>Adresse</label><input type="text" id="sc-adresse"></div>
+    </div>
+
+    <div class="site-section-title">🍽️ Section "Le restaurant"</div>
+    <div class="site-grid">
+      <div class="site-field"><label>Surtitre</label><input type="text" id="sc-concept-surtitre"></div>
+      <div class="site-field"><label>Titre</label><input type="text" id="sc-concept-titre"></div>
+      <div class="site-field full"><label>Texte 1</label><textarea id="sc-concept-texte1"></textarea></div>
+      <div class="site-field full"><label>Texte 2</label><textarea id="sc-concept-texte2"></textarea></div>
+      <div class="site-field"><label>Badge — chiffre</label><input type="text" id="sc-badge-nb"></div>
+      <div class="site-field"><label>Badge — texte</label><input type="text" id="sc-badge-txt"></div>
+      <div class="site-field full">
+        <label>URL de l'image</label>
+        <input type="text" id="sc-concept-img" placeholder="https://..." oninput="previewImg('sc-concept-img','prev-concept-img')">
+        <img id="prev-concept-img" class="site-img-preview" src="" style="display:none">
+      </div>
+    </div>
+
+    <div class="site-section-title">🖼️ Galerie (5 photos)</div>
+    <div class="site-grid">
+      <div class="site-field full">
+        <label>Photo principale (grande)</label>
+        <input type="text" id="sc-gal-img1" placeholder="https://..." oninput="previewImg('sc-gal-img1','prev-gal1')">
+        <img id="prev-gal1" class="site-img-preview" src="" style="display:none">
+      </div>
+      <div class="site-field">
+        <label>Photo 2</label>
+        <input type="text" id="sc-gal-img2" placeholder="https://..." oninput="previewImg('sc-gal-img2','prev-gal2')">
+        <img id="prev-gal2" class="site-img-preview" src="" style="display:none">
+      </div>
+      <div class="site-field">
+        <label>Photo 3</label>
+        <input type="text" id="sc-gal-img3" placeholder="https://..." oninput="previewImg('sc-gal-img3','prev-gal3')">
+        <img id="prev-gal3" class="site-img-preview" src="" style="display:none">
+      </div>
+      <div class="site-field">
+        <label>Photo 4</label>
+        <input type="text" id="sc-gal-img4" placeholder="https://..." oninput="previewImg('sc-gal-img4','prev-gal4')">
+        <img id="prev-gal4" class="site-img-preview" src="" style="display:none">
+      </div>
+      <div class="site-field">
+        <label>Photo 5</label>
+        <input type="text" id="sc-gal-img5" placeholder="https://..." oninput="previewImg('sc-gal-img5','prev-gal5')">
+        <img id="prev-gal5" class="site-img-preview" src="" style="display:none">
+      </div>
+    </div>
+
+    <div class="site-section-title">📋 Section "Formule"</div>
+    <div class="site-grid">
+      <div class="site-field"><label>Surtitre</label><input type="text" id="sc-formule-surtitre"></div>
+      <div class="site-field"><label>Titre</label><input type="text" id="sc-formule-titre"></div>
+      <div class="site-field full"><label>Texte</label><textarea id="sc-formule-texte"></textarea></div>
+      <div class="site-field"><label>Carte 1 — titre</label><input type="text" id="sc-carte1-titre"></div>
+      <div class="site-field"><label>Carte 1 — texte</label><input type="text" id="sc-carte1-texte"></div>
+      <div class="site-field"><label>Carte 2 — titre</label><input type="text" id="sc-carte2-titre"></div>
+      <div class="site-field"><label>Carte 2 — texte</label><input type="text" id="sc-carte2-texte"></div>
+      <div class="site-field"><label>Carte 3 — titre</label><input type="text" id="sc-carte3-titre"></div>
+      <div class="site-field"><label>Carte 3 — texte</label><input type="text" id="sc-carte3-texte"></div>
+    </div>
+
+    <div class="site-section-title">📢 Section "Réservation"</div>
+    <div class="site-grid">
+      <div class="site-field"><label>Surtitre</label><input type="text" id="sc-cta-surtitre"></div>
+      <div class="site-field"><label>Titre</label><input type="text" id="sc-cta-titre"></div>
+      <div class="site-field full"><label>Texte</label><textarea id="sc-cta-texte"></textarea></div>
+    </div>
+
+    <div class="site-save-bar">
+      <button class="btn-site-save" id="btn-site-save" onclick="saveSiteConfig()">💾 Publier les modifications</button>
+      <span class="site-saved-msg" id="site-saved-msg">✓ Publié avec succès !</span>
+    </div>
+  </div>
+</div>
+
 <div id="print-area"></div>
 
 <div class="toast" id="toast"></div>
@@ -932,7 +1071,7 @@
 </div>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────
+
 const API_URL = 'https://zwjgenpxsjvzmxqoxepv.supabase.co/rest/v1/reservations';
 const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3amdlbnB4c2p2em14cW94ZXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMDQ1NTYsImV4cCI6MjA5MDg4MDU1Nn0.GtQx5lQbFmPFvH_ji-4T9bZ3xbL8DPYpUanKy_D4Z9c';
 const HEADERS = {
@@ -942,6 +1081,127 @@ const HEADERS = {
   'Prefer': 'return=representation'
 };
 const POLL_INTERVAL = 5000; // vérification toutes les 5 secondes
+
+// ── SITE CONFIG ──────────────────────────────────────────
+const SITE_CFG_URL = 'https://zwjgenpxsjvzmxqoxepv.supabase.co/rest/v1/site_config';
+const SITE_CFG_HEADERS = {
+  'apikey': API_KEY, 'Authorization': 'Bearer ' + API_KEY,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=representation,resolution=merge-duplicates'
+};
+
+let siteConfig = {};
+
+async function loadSiteConfig() {
+  try {
+    const r = await fetch(SITE_CFG_URL + '?id=eq.1', {
+      headers: { 'apikey': API_KEY, 'Authorization': 'Bearer ' + API_KEY }
+    });
+    if (r.ok) {
+      const data = await r.json();
+      if (data.length && data[0].config) {
+        siteConfig = data[0].config;
+        fillSiteForm(siteConfig);
+      }
+    }
+  } catch(e) { showToast('Impossible de charger la config site.', 'error'); }
+}
+
+function fillSiteForm(c) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+  const prev = (inputId, imgId, url) => {
+    if (!url) return;
+    const img = document.getElementById(imgId);
+    if (img) { img.src = url; img.style.display = 'block'; }
+  };
+  if (c.couleurs) { set('sc-bordeaux', c.couleurs.bordeaux); set('sc-or', c.couleurs.or); }
+  if (c.hero) {
+    set('sc-hero-surtitre', c.hero.surtitre); set('sc-hero-titre1', c.hero.titre_ligne1);
+    set('sc-hero-titre2', c.hero.titre_ligne2); set('sc-hero-sous-titre', c.hero.sous_titre);
+    set('sc-hero-img', c.hero.image_url); prev('sc-hero-img', 'prev-hero-img', c.hero.image_url);
+  }
+  if (c.infos) {
+    set('sc-horaires', c.infos.horaires); set('sc-ouverture', c.infos.ouverture);
+    set('sc-capacite', c.infos.capacite); set('sc-adresse', c.infos.adresse);
+  }
+  if (c.concept) {
+    set('sc-concept-surtitre', c.concept.surtitre); set('sc-concept-titre', c.concept.titre);
+    set('sc-concept-texte1', c.concept.texte1); set('sc-concept-texte2', c.concept.texte2);
+    set('sc-badge-nb', c.concept.badge_nb); set('sc-badge-txt', c.concept.badge_txt);
+    set('sc-concept-img', c.concept.image_url); prev('sc-concept-img', 'prev-concept-img', c.concept.image_url);
+  }
+  if (c.galerie) {
+    ['img1','img2','img3','img4','img5'].forEach((k,i) => {
+      set('sc-gal-'+k, c.galerie[k]);
+      prev('sc-gal-'+k, 'prev-gal'+(i+1), c.galerie[k]);
+    });
+  }
+  if (c.formule) {
+    set('sc-formule-surtitre', c.formule.surtitre); set('sc-formule-titre', c.formule.titre);
+    set('sc-formule-texte', c.formule.texte);
+    set('sc-carte1-titre', c.formule.carte1_titre); set('sc-carte1-texte', c.formule.carte1_texte);
+    set('sc-carte2-titre', c.formule.carte2_titre); set('sc-carte2-texte', c.formule.carte2_texte);
+    set('sc-carte3-titre', c.formule.carte3_titre); set('sc-carte3-texte', c.formule.carte3_texte);
+  }
+  if (c.cta) {
+    set('sc-cta-surtitre', c.cta.surtitre); set('sc-cta-titre', c.cta.titre);
+    set('sc-cta-texte', c.cta.texte);
+  }
+}
+
+function readSiteForm() {
+  const g = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  return {
+    couleurs: { bordeaux: g('sc-bordeaux'), or: g('sc-or') },
+    hero: { surtitre: g('sc-hero-surtitre'), titre_ligne1: g('sc-hero-titre1'),
+            titre_ligne2: g('sc-hero-titre2'), sous_titre: g('sc-hero-sous-titre'),
+            image_url: g('sc-hero-img') },
+    infos: { horaires: g('sc-horaires'), ouverture: g('sc-ouverture'),
+             capacite: g('sc-capacite'), adresse: g('sc-adresse') },
+    concept: { surtitre: g('sc-concept-surtitre'), titre: g('sc-concept-titre'),
+               texte1: g('sc-concept-texte1'), texte2: g('sc-concept-texte2'),
+               badge_nb: g('sc-badge-nb'), badge_txt: g('sc-badge-txt'),
+               image_url: g('sc-concept-img') },
+    galerie: { img1: g('sc-gal-img1'), img2: g('sc-gal-img2'), img3: g('sc-gal-img3'),
+               img4: g('sc-gal-img4'), img5: g('sc-gal-img5') },
+    formule: { surtitre: g('sc-formule-surtitre'), titre: g('sc-formule-titre'),
+               texte: g('sc-formule-texte'),
+               carte1_titre: g('sc-carte1-titre'), carte1_texte: g('sc-carte1-texte'),
+               carte2_titre: g('sc-carte2-titre'), carte2_texte: g('sc-carte2-texte'),
+               carte3_titre: g('sc-carte3-titre'), carte3_texte: g('sc-carte3-texte') },
+    cta: { surtitre: g('sc-cta-surtitre'), titre: g('sc-cta-titre'), texte: g('sc-cta-texte') }
+  };
+}
+
+async function saveSiteConfig() {
+  const btn = $('btn-site-save');
+  btn.disabled = true; btn.textContent = '⏳ Publication…';
+  const cfg = readSiteForm();
+  try {
+    const r = await fetch(SITE_CFG_URL, {
+      method: 'POST', headers: SITE_CFG_HEADERS,
+      body: JSON.stringify({ id: 1, config: cfg })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    siteConfig = cfg;
+    const msg = $('site-saved-msg');
+    msg.classList.add('visible');
+    setTimeout(() => msg.classList.remove('visible'), 3000);
+    showToast('✓ Site mis à jour avec succès !', 'success');
+  } catch(e) {
+    showToast('Erreur lors de la sauvegarde : ' + e.message, 'error');
+  }
+  btn.disabled = false; btn.textContent = '💾 Publier les modifications';
+}
+
+function previewImg(inputId, imgId) {
+  const url = document.getElementById(inputId)?.value?.trim();
+  const img = document.getElementById(imgId);
+  if (!img) return;
+  if (url) { img.src = url; img.style.display = 'block'; }
+  else img.style.display = 'none';
+}
+
 
 const $ = id => document.getElementById(id);
 
@@ -1002,6 +1262,7 @@ function showTab(tab, btn) {
   if (tab === 'agenda') { $('notif-badge').classList.remove('visible'); }
   if (tab === 'clients') { renderClients(); }
   if (tab === 'salle') { initSalle(); }
+  if (tab === 'site')  { loadSiteConfig(); }
 }
 
 function escHTML(s) {

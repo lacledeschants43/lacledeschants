@@ -391,14 +391,14 @@
   }
   .month-cell.has-resa { border-color:var(--bordeaux); cursor:pointer; background:rgba(107,26,42,0.03); }
   .month-cell.has-resa:hover { background:rgba(107,26,42,0.07); }
-  .month-cell.is-today { border-color:var(--bordeaux); box-shadow:0 0 0 2px rgba(107,26,42,0.2); }
+  .month-cell.is-today { border-color:var(--bordeaux); border-width:2.5px; background:rgba(107,26,42,0.04); }
   .month-cell.empty-cell { background:transparent; border-color:transparent; }
   .mc-num {
     font-size:0.82rem; font-weight:700; color:var(--gris);
     display:flex; align-items:center; justify-content:space-between;
     margin-bottom:3px;
   }
-  .mc-num.today-num { color:var(--blanc); background:var(--bordeaux); border-radius:4px; padding:1px 5px; align-self:flex-start; }
+  .mc-num.today-num span { color:var(--blanc); background:var(--bordeaux); border-radius:4px; padding:1px 7px; display:inline-block; }
   .month-cell.has-resa .mc-num { color:var(--bordeaux); }
   .mc-mini-resa {
     background:rgba(107,26,42,0.08); border-left:2px solid var(--bordeaux);
@@ -407,9 +407,10 @@
     line-height:1.4;
   }
   .mc-mini-resa.copied { background:rgba(45,122,79,0.1); border-left-color:var(--success); color:var(--success); opacity:0.75; }
-  .month-cell.is-today .mc-mini-resa { background:rgba(255,255,255,0.15); border-left-color:rgba(255,255,255,0.6); color:var(--blanc); }
+  .mc-mini-resa { cursor:pointer; }
+  .mc-mini-resa:hover { background:rgba(107,26,42,0.15); }
   .mc-more { font-size:0.58rem; color:var(--gris); font-style:italic; text-align:center; margin-top:1px; }
-  .month-cell.is-today .mc-more { color:rgba(255,255,255,0.7); }
+
   .month-label { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--bordeaux); margin-bottom:4px; }
   .month-nav { display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
   .month-total { font-size:0.75rem; color:var(--gris); }
@@ -1194,6 +1195,7 @@ function getWeekStart(date) {
 // ── SYSTÈME DE VUES ───────────────────────────────────────
 let viewMode = 'today';
 let currentMonthDate = new Date();
+let currentDayDate = new Date(); // pour la vue aujourd'hui
 
 function quickFilter(type) {
   viewMode = type;
@@ -1202,7 +1204,7 @@ function quickFilter(type) {
   if (btn) btn.classList.add('active');
   $('week-nav-bar').style.display  = type === 'week'  ? 'flex' : 'none';
   $('month-nav-bar').style.display = type === 'month' ? 'block' : 'none';
-  if (type === 'today')      renderViewToday();
+  if (type === 'today')      { currentDayDate = new Date(); renderViewToday(); }
   else if (type === 'week')  { currentWeekStart = getWeekStart(new Date()); renderViewWeek(); }
   else if (type === 'month') { currentMonthDate = new Date(); renderViewMonth(); }
 }
@@ -1221,7 +1223,7 @@ function changeMonth(dir) {
 }
 
 function renderAgenda(newId=null) {
-  if (viewMode === 'today')      renderViewToday(newId);
+  if (viewMode === 'today')      renderViewToday(newId, true);
   else if (viewMode === 'week')  renderViewWeek(newId);
   else if (viewMode === 'month') renderViewMonth();
 }
@@ -1335,12 +1337,11 @@ function renderViewMonth() {
     const resas=byDate[ds]||[], isToday=ds===todayStr, hasResa=resas.length>0;
     const sorted=[...resas].sort((a,b)=>(a.heure||'99').localeCompare(b.heure||'99'));
     const cls=['month-cell',hasResa?'has-resa':'',isToday?'is-today':''].filter(Boolean).join(' ');
-    const MAX=3;
-    const miniCards=sorted.slice(0,MAX).map(r=>{
+    const miniCards=sorted.map(r=>{
       const h=r.heure?r.heure.slice(0,5).replace(':','h')+' ':'';
       return `<div class="mc-mini-resa${r.copied?' copied':''}" onclick="event.stopPropagation();openDrawer(${r.id})" title="${escHTML(r.nom)} · ${r.couverts}p">${h}${escHTML(r.nom)}</div>`;
     }).join('');
-    const extra=sorted.length>MAX?`<div class="mc-more">+${sorted.length-MAX} autre${sorted.length-MAX>1?'s':''}</div>`:'';
+    const extra='';
     calHtml+=`<div class="${cls}" ${hasResa?`onclick="scrollToDay('${ds}')"`:''}>
       <div class="mc-num${isToday?' today-num':''}"><span>${d}</span></div>
       ${miniCards}${extra}

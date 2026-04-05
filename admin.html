@@ -336,10 +336,39 @@
     border-bottom:2px solid var(--bordeaux); padding-bottom:8px;
   }
   .day-view-count { font-family:'Lato',sans-serif; font-size:0.78rem; color:var(--gris); font-weight:400; }
-  #agenda-view .resa-card { margin-bottom:8px; animation:fadeIn 0.3s ease; }
-  #agenda-view .resa-card .mini-check.checked { background:var(--success); border-color:var(--success); }
-  #agenda-view .resa-card .mini-check.checked::after { content:'✓'; color:white; font-size:0.65rem; font-weight:900; }
+
+  /* Cartes réservation (vues aujourd'hui + mois) */
+  .resa-card {
+    background:var(--blanc); border-radius:8px; padding:14px 16px; margin-bottom:8px;
+    display:flex; align-items:center; gap:14px;
+    box-shadow:0 1px 6px rgba(0,0,0,0.06); border-left:4px solid var(--bordeaux);
+    transition:box-shadow 0.2s; animation:fadeIn 0.3s ease;
+  }
+  .resa-card:hover { box-shadow:0 4px 16px rgba(107,26,42,0.1); }
+  .resa-card.new-flash { animation:flashNew 2s ease forwards; }
+  .resa-time {
+    font-size:0.8rem; font-weight:700; color:var(--bordeaux);
+    background:rgba(107,26,42,0.06); padding:5px 9px; border-radius:5px;
+    white-space:nowrap; min-width:56px; text-align:center; flex-shrink:0;
+  }
+  .resa-main { flex:1; min-width:0; }
+  .resa-name { font-family:'Playfair Display',serif; font-size:1rem; color:var(--noir); font-weight:700; }
+  .resa-meta { font-size:0.78rem; color:var(--gris); margin-top:2px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .resa-meta .couverts { background:var(--creme); border:1px solid var(--gris-clair); border-radius:4px; padding:2px 6px; font-weight:700; color:var(--noir); font-size:0.78rem; }
+  .resa-comment { font-size:0.78rem; color:var(--gris); font-style:italic; margin-top:4px; }
+  .card-actions { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+
+  #agenda-view .mini-check {
+    width:18px; height:18px; border:1.5px solid var(--gris-clair); border-radius:3px;
+    background:var(--blanc); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:all 0.15s; flex-shrink:0;
+  }
+  #agenda-view .mini-check:hover { border-color:var(--success); }
+  #agenda-view .mini-check.checked { background:var(--success); border-color:var(--success); }
+  #agenda-view .mini-check.checked::after { content:'✓'; color:white; font-size:0.65rem; font-weight:900; }
   .day-group { margin-bottom:28px; }
+  .day-label { font-family:'Playfair Display',serif; font-size:1rem; color:var(--bordeaux); border-bottom:2px solid var(--bordeaux); padding-bottom:6px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
+  .day-count { font-family:'Lato',sans-serif; font-size:0.75rem; color:var(--gris); font-weight:400; }
 
   /* Vue mois */
   .month-grid {

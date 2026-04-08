@@ -6,6 +6,20 @@
 <title>La Clé des Chants — Administration</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
+
+  /* ── STATUTS RÉSERVATION ── */
+.resa-status {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+  padding: 4px 10px; border-radius: 99px; cursor: pointer;
+  border: none; font-family: 'Lato', sans-serif;
+  transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+  text-transform: uppercase;
+}
+.resa-status.prise    { background: rgba(107,26,42,0.08); color: var(--bordeaux); }
+.resa-status.notee    { background: rgba(201,168,76,0.15); color: #8a6a00; }
+.resa-status.arrivee  { background: rgba(45,122,79,0.12); color: var(--success); }
+.resa-status:hover    { filter: brightness(0.9); transform: scale(1.03); }
   .autocomplete-list {
   position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
   background: var(--blanc); border: 1.5px solid var(--bordeaux);
@@ -1597,22 +1611,31 @@ function updateStats() {
     <div class="stat-chip"><div class="val">${futureR.reduce((s,r)=>s+r.couverts,0)}</div><div class="lbl">Couverts à venir</div></div>`;
 }
 
+const STATUS_CONFIG = {
+  prise:   { label: 'Réservation prise',      icon: '📋', next: 'notee'   },
+  notee:   { label: 'Notée sur le cahier',     icon: '✏️', next: 'arrivee' },
+  arrivee: { label: 'Arrivée',                 icon: '✅', next: 'prise'   },
+};
+
 function buildResaCard(r, newId=null) {
-  const copied = !!r.copied;
+  const status = r.status || 'prise';
+  const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.prise;
   return `
     <div class="resa-card${newId===r.id?' new-flash':''}" id="card-${r.id}">
-      <div class="resa-time">${r.heure?r.heure.slice(0,5).replace(':','h'):'—'}</div>
+      <div class="resa-time">${r.heure ? r.heure.slice(0,5).replace(':','h') : '—'}</div>
       <div class="resa-main">
         <div class="resa-name">${escHTML(r.nom)}</div>
         <div class="resa-meta">
           <span class="couverts">👥 ${r.couverts} pers.</span>
-          ${r.tel?`<span>📞 ${escHTML(r.tel)}</span>`:''}
+          ${r.tel ? `<span>📞 ${escHTML(r.tel)}</span>` : ''}
         </div>
-        ${r.comment?`<div class="resa-comment">💬 ${escHTML(r.comment)}</div>`:''}
+        ${r.comment ? `<div class="resa-comment">💬 ${escHTML(r.comment)}</div>` : ''}
       </div>
       <div class="card-actions">
-        <div class="mini-check${copied?' checked':''}" title="Recopié sur cahier" onclick="toggleCopied(event,${r.id})" style="width:18px;height:18px;border:1.5px solid var(--gris-clair);border-radius:3px;background:var(--blanc);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;"></div>
-        <button class="btn-edit" onclick="openEdit(${r.id})">✏️ Modifier</button>
+        <button class="resa-status ${status}" onclick="cycleStatus(event,${r.id})" title="Cliquer pour passer à l'étape suivante">
+          ${cfg.icon} ${cfg.label}
+        </button>
+        <button class="btn-edit" onclick="openEdit(${r.id})">✏️</button>
         <button class="btn-del" onclick="deleteResa(${r.id},'${escHTML(r.nom)}')">✕</button>
       </div>
     </div>`;
@@ -1773,6 +1796,26 @@ async function toggleCopied(e, id) {
   }
 }
 
+  // ── CYCLE STATUT ─────────────────────────────────────────
+async function cycleStatus(e, id) {
+  e.stopPropagation();
+  const r = allResas.find(x => x.id === id);
+  if (!r) return;
+  const current = r.status || 'prise';
+  const next = STATUS_CONFIG[current].next;
+  // Mise à jour optimiste
+  r.status = next;
+  renderAgenda();
+  try {
+    await apiUpdate(id, { status: next });
+    const cfg = STATUS_CONFIG[next];
+    showToast(`${cfg.icon} ${r.nom} — ${cfg.label}`, 'success');
+  } catch(err) {
+    r.status = current;
+    renderAgenda();
+    showToast('Erreur mise à jour statut.', 'error');
+  }
+}
 // ── DRAWER DÉTAIL ─────────────────────────────────────────
 let drawerResaId = null;
 

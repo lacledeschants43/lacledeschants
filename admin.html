@@ -514,8 +514,8 @@
     transition:all 0.15s; flex-shrink:0;
   }
   .mini-check:hover { border-color:var(--success); }
-  .mini-check.checked { background:var(--success); border-color:var(--success); }
-  .mini-check.checked::after { content:'✓'; color:white; font-size:0.65rem; font-weight:900; }
+.mini-check.checked-arrivee { background: var(--success); border-color: var(--success); }
+.mini-check.checked-arrivee::after { content:'✓'; color:white; font-size:0.65rem; font-weight:900; }
 
   /* ── DRAWER DÉTAIL ── */
   .drawer-overlay {
@@ -1682,11 +1682,12 @@ function renderViewWeek(newId=null) {
     const totC=dayResas.reduce((s,r)=>s+r.couverts,0), isEmpty=!dayResas.length;
     const cards=dayResas.map(r=>{
       const copied=!!r.copied;
+      const checkClass = r.copied ? (r.status === 'arrivee' ? 'checked-arrivee' : 'checked') : '';
       const h=r.heure?r.heure.slice(0,5).replace(':','h'):null;
       return `<div class="mc-mini-resa${copied?' copied':''}${newId===r.id?' new-flash':''}" id="mini-${r.id}" onclick="openDrawer(${r.id})" style="position:relative;">
         <div class="mc-mini-resa-nom">${escHTML(r.nom)}</div>
         <div class="mc-mini-resa-couverts">&#128101; ${r.couverts} couvert${r.couverts>1?'s':''}${h?' &middot; '+h:''}</div>
-        <div class="mini-check${copied?' checked':''}" title="Recopié sur cahier" onclick="toggleCopied(event,${r.id})"></div>
+       <div class="mini-check${checkClass ? ' '+checkClass : ''}" title="Recopié sur cahier" onclick="toggleCopied(event,${r.id})"></div>
       </div>`;
     }).join('');
     return `<div class="cal-day${isToday?' today':''}${isEmpty?' empty-day':''}">
@@ -1803,7 +1804,7 @@ async function setStatus(e, id, newStatus) {
   const prev = r.status;
   const prevCopied = r.copied;
   r.status = newStatus;
-  r.copied = newStatus === 'notee'; // coche si "notee", décoche sinon
+  r.copied = newStatus === 'notee' || newStatus === 'arrivee'; // coché pour notee ET arrivee
   renderAgenda();
   try {
     await apiUpdate(id, { status: newStatus, copied: r.copied });

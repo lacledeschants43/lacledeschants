@@ -1307,27 +1307,19 @@ async function apiDelete(id) {
 function playSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const BIP_FREQ = 1050;   // fréquence bien audible
-    const BIP_DUR  = 0.12;   // durée d'un bip
-    const BIP_GAP  = 0.18;   // silence entre bips
-    const GRP_GAP  = 0.45;   // silence entre les 2 groupes
-    const VOL      = 0.7;
-
-    // Deux groupes de 3 bips
-    [0, 1].forEach(grp => {
-      [0, 1, 2].forEach(bip => {
-        const t = ctx.currentTime + grp * (3 * (BIP_DUR + BIP_GAP) + GRP_GAP) + bip * (BIP_DUR + BIP_GAP);
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
+    // Fanfare courte : 4 notes montantes Do Mi Sol Do
+    [[523,0,0.15],[659,0.18,0.15],[784,0.36,0.15],[1047,0.54,0.4]].forEach(function(nf) {
+      [1, 2, 3].forEach(function(r) {
+        var o = ctx.createOscillator(), g = ctx.createGain();
         o.connect(g); g.connect(ctx.destination);
-        o.type = 'square';          // timbre vif, style téléphone
-        o.frequency.value = BIP_FREQ;
-        g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(VOL, t + 0.008);
-        g.gain.setValueAtTime(VOL, t + BIP_DUR - 0.01);
-        g.gain.linearRampToValueAtTime(0, t + BIP_DUR);
-        o.start(t);
-        o.stop(t + BIP_DUR + 0.02);
+        o.type = 'sine'; o.frequency.value = nf[0] * r;
+        var vol = 0.45 / r;
+        var start = ctx.currentTime + nf[1];
+        var dur = nf[2] + 0.3;
+        g.gain.setValueAtTime(0, start);
+        g.gain.linearRampToValueAtTime(vol, start + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+        o.start(start); o.stop(start + dur + 0.05);
       });
     });
   } catch(e) {}

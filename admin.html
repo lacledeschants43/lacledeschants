@@ -1775,21 +1775,21 @@ function getWeekNumber(d) {
 }
 
 
-// ── CASE À COCHER "RECOPIÉ" ──────────────────────────────
 async function toggleCopied(e, id) {
   e.stopPropagation();
   const r = allResas.find(x => x.id === id);
   if (!r) return;
-  const newVal = !r.copied;
-  // Mise à jour optimiste locale
-  r.copied = newVal;
+  const newCopied = !r.copied;
+  const newStatus = newCopied ? 'notee' : 'prise';
+  // Mise à jour optimiste
+  r.copied = newCopied;
+  r.status = newStatus;
   renderAgenda();
-  // Persistance Supabase
   try {
-    await apiUpdate(id, { copied: newVal });
+    await apiUpdate(id, { copied: newCopied, status: newStatus });
   } catch(err) {
-    // Rollback si erreur
-    r.copied = !newVal;
+    r.copied = !newCopied;
+    r.status = newCopied ? 'prise' : 'notee';
     renderAgenda();
     showToast('Erreur lors de la mise à jour.', 'error');
   }
@@ -1801,14 +1801,17 @@ async function setStatus(e, id, newStatus) {
   const r = allResas.find(x => x.id === id);
   if (!r || r.status === newStatus) return;
   const prev = r.status;
+  const prevCopied = r.copied;
   r.status = newStatus;
+  r.copied = newStatus === 'notee'; // coche si "notee", décoche sinon
   renderAgenda();
   try {
-    await apiUpdate(id, { status: newStatus });
+    await apiUpdate(id, { status: newStatus, copied: r.copied });
     const labels = { prise:'📋 Réservation prise', notee:'✏️ Notée sur le cahier', arrivee:'✅ Arrivée' };
     showToast(`${labels[newStatus]} — ${r.nom}`, 'success');
   } catch(err) {
     r.status = prev;
+    r.copied = prevCopied;
     renderAgenda();
     showToast('Erreur mise à jour statut.', 'error');
   }

@@ -6,6 +6,21 @@
 <title>La Clé des Chants — Administration</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
+  .autocomplete-list {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
+  background: var(--blanc); border: 1.5px solid var(--bordeaux);
+  border-radius: 0 0 8px 8px; box-shadow: 0 8px 24px rgba(107,26,42,0.12);
+  max-height: 220px; overflow-y: auto; display: none;
+}
+.autocomplete-item {
+  padding: 10px 14px; cursor: pointer; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--gris-clair); transition: background 0.15s;
+}
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item:hover, .autocomplete-item.active { background: rgba(107,26,42,0.06); }
+.autocomplete-name { font-weight: 700; color: var(--noir); }
+.autocomplete-meta { font-size: 0.75rem; color: var(--gris); }
   /* ── ÉCRAN DE CONNEXION ── */
   .login-overlay {
     position:fixed; inset:0; background:#2a0a12;
@@ -706,11 +721,13 @@
       <div class="form-title">Nouvelle réservation</div>
       <div class="form-subtitle">Champs marqués <span class="form-required">*</span> obligatoires</div>
       <div class="form-grid">
-        <div class="form-group full">
-          <label for="f-nom">Nom du client <span class="form-required">*</span></label>
-          <input type="text" id="f-nom" placeholder="Nom et prénom" autocomplete="name">
-          <span class="field-error" id="err-nom">Veuillez saisir un nom.</span>
-        </div>
+        <div class="form-group full" style="position:relative">
+  <label for="f-nom">Nom du client <span class="form-required">*</span></label>
+  <input type="text" id="f-nom" placeholder="Nom et prénom" autocomplete="off"
+    oninput="autocompleteNom()" onblur="setTimeout(()=>fermerAutocomplete(),200)">
+  <span class="field-error" id="err-nom">Veuillez saisir un nom.</span>
+  <div class="autocomplete-list" id="autocomplete-list"></div>
+</div>
         <div class="form-group">
           <label for="f-date">Date <span class="form-required">*</span></label>
           <input type="date" id="f-date">
@@ -1081,6 +1098,44 @@ const HEADERS = {
   'Prefer': 'return=representation'
 };
 const POLL_INTERVAL = 5000; // vérification toutes les 5 secondes
+
+// ── AUTOCOMPLETE NOM ─────────────────────────────────────
+function autocompleteNom() {
+  const q = normaliserNom($('f-nom').value);
+  const list = $('autocomplete-list');
+  if (q.length < 1) { fermerAutocomplete(); return; }
+
+  // Dédoublonner les clients connus
+  const seen = new Set();
+  const clients = [];
+  allResas.forEach(r => {
+    const key = normaliserNom(r.nom);
+    if (!seen.has(key) && key.includes(q)) {
+      seen.add(key);
+      clients.push({ nom: r.nom, tel: r.tel || '' });
+    }
+  });
+
+  if (!clients.length) { fermerAutocomplete(); return; }
+
+  list.innerHTML = clients.slice(0, 8).map((c, i) => `
+    <div class="autocomplete-item" onmousedown="choisirClient('${escHTML(c.nom)}','${escHTML(c.tel)}')" >
+      <span class="autocomplete-name">${escHTML(c.nom)}</span>
+      ${c.tel ? `<span class="autocomplete-meta">📞 ${escHTML(c.tel)}</span>` : ''}
+    </div>
+  `).join('');
+  list.style.display = 'block';
+}
+
+function choisirClient(nom, tel) {
+  $('f-nom').value = nom;
+  if (tel) $('f-phone').value = tel;
+  fermerAutocomplete();
+}
+
+function fermerAutocomplete() {
+  $('autocomplete-list').style.display = 'none';
+}  
 
 // ── SITE CONFIG ──────────────────────────────────────────
 const SITE_CFG_URL = 'https://zwjgenpxsjvzmxqoxepv.supabase.co/rest/v1/site_config';

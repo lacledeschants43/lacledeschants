@@ -1628,11 +1628,11 @@ function buildResaCard(r, newId=null) {
           ${r.tel ? `<span>📞 ${escHTML(r.tel)}</span>` : ''}
         </div>
         ${r.comment ? `<div class="resa-comment">💬 ${escHTML(r.comment)}</div>` : ''}
-        <div class="status-steps">
-          <div class="status-step${status==='prise'   ? ' active-prise'   : ''}" onclick="setStatus(event,${r.id},'prise')">📋 Prise</div>
-          <div class="status-step${status==='notee'   ? ' active-notee'   : ''}" onclick="setStatus(event,${r.id},'notee')">✏️ Cahier</div>
-          <div class="status-step${status==='arrivee' ? ' active-arrivee' : ''}" onclick="setStatus(event,${r.id},'arrivee')">✅ Arrivée</div>
-        </div>
+      </div>
+      <div class="status-steps">
+        <div class="status-step${status==='prise'   ? ' active-prise'   : ''}" onclick="setStatus(event,${r.id},'prise')">📋 Prise</div>
+        <div class="status-step${status==='notee'   ? ' active-notee'   : ''}" onclick="setStatus(event,${r.id},'notee')">✏️ Cahier</div>
+        <div class="status-step${status==='arrivee' ? ' active-arrivee' : ''}" onclick="setStatus(event,${r.id},'arrivee')">✅ Arrivée</div>
       </div>
       <div class="card-actions">
         <button class="btn-edit" onclick="openEdit(${r.id})">✏️</button>
@@ -1640,7 +1640,6 @@ function buildResaCard(r, newId=null) {
       </div>
     </div>`;
 }
-
 // ── VUE AUJOURD'HUI ───────────────────────────────────────
 function renderViewToday(newId=null) {
   const realTodayStr = toDateStr(new Date());

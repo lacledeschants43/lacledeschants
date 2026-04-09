@@ -2033,12 +2033,12 @@ function ticketEntete(sousTitre) {
 // Ticket de confirmation — 1 réservation — imprimé automatiquement
 function imprimerConfirmation(resa) {
   const d = new Date(resa.date + 'T12:00:00');
-  const dateStr = `${JOURS_FULL[d.getDay()]} ${d.getDate()} ${MOIS_LONG[d.getMonth()]} ${d.getFullYear()}`;
+  const dateStr = `${JOURS_FULL[d.getDay()]} ${d.getDate()} ${MOIS_LONG[d.getMonth()]}`;
 
   let html = `
-    <div style="font-family:'Arial Black',Arial,sans-serif; font-size:28px; font-weight:900; line-height:1.4; padding:4mm;">
-      <div>${dateStr}</div>
-      <div style="display:flex; justify-content:space-between; gap:8px;">
+    <div style="font-family:'Arial Black',Arial,sans-serif; font-weight:900; line-height:1.4; padding:4mm;">
+      <div style="font-size:22px;">${dateStr}</div>
+      <div style="font-size:28px; display:flex; justify-content:space-between; gap:8px;">
         <span>${escHTML(resa.nom)}</span>
         <span style="white-space:nowrap;">${resa.couverts}p</span>
       </div>

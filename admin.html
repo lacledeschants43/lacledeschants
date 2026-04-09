@@ -2058,7 +2058,32 @@ function buildResaCard(r, newId=null) {
       </div>
     </div>`;
 }
+function imprimerParId(id) {
+  const r = allResas.find(x => x.id === id);
+  if (r) imprimerConfirmation(r);
+}
 
+function imprimerConfirmation(resa) {
+  const JOURS_FULL = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const MOIS_LONG  = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const d = new Date(resa.date + 'T12:00:00');
+  const dateStr = `${JOURS_FULL[d.getDay()]} ${d.getDate()} ${MOIS_LONG[d.getMonth()]}`;
+  let html = `
+    <div style="font-family:'Arial Black',Arial,sans-serif; font-weight:900; line-height:1.4; padding:4mm;">
+      <div style="font-size:22px;">${dateStr}</div>
+      <table style="width:100%; font-size:28px; border-collapse:collapse;">
+        <tr>
+          <td style="font-weight:900;">${escHTML(resa.nom)}</td>
+          <td style="text-align:right; white-space:nowrap; font-weight:900;">${resa.couverts}p</td>
+        </tr>
+      </table>
+      ${resa.comment ? `<div style="font-size:22px;">${escHTML(resa.comment)}</div>` : ''}
+    </div>
+  `;
+  $('print-area').innerHTML = html;
+  window.print();
+}
+  
 function imprimerSemaine() {
   const days = [];
   for (let i=0; i<7; i++) {

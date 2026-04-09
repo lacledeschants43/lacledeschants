@@ -2070,14 +2070,15 @@ function imprimerConfirmation(resa) {
   const dateStr = `${JOURS_FULL[d.getDay()]} ${d.getDate()} ${MOIS_LONG[d.getMonth()]}`;
   let html = `
     <div style="font-family:'Arial Black',Arial,sans-serif; font-weight:900; line-height:1.4; padding:4mm;">
-      <div style="font-size:22px;">${dateStr}</div>
+      <div style="font-size:22px; margin-bottom:6mm;">${dateStr}</div>
       <table style="width:100%; font-size:28px; border-collapse:collapse;">
         <tr>
           <td style="font-weight:900;">${escHTML(resa.nom)}</td>
           <td style="text-align:right; white-space:nowrap; font-weight:900;">${resa.couverts}p</td>
         </tr>
       </table>
-      ${resa.comment ? `<div style="font-size:22px;">${escHTML(resa.comment)}</div>` : ''}
+      ${resa.comment ? `<div style="font-size:22px; margin-top:4mm;">${escHTML(resa.comment)}</div>` : ''}
+      <div style="margin-top:12mm; border-bottom:1px solid #ccc;">&nbsp;</div>
     </div>
   `;
   $('print-area').innerHTML = html;

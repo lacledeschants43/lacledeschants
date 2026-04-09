@@ -2028,23 +2028,30 @@ function ticketEntete(sousTitre) {
 }
 
 // Ticket de confirmation — 1 réservation — imprimé automatiquement
-function imprimerConfirmation(resa) {
-  const d = new Date(resa.date + 'T12:00:00');
-  const dateStr = `${JOURS_FULL[d.getDay()]} ${d.getDate()} ${MOIS_LONG[d.getMonth()]}`;
-  let html = `
-    <div style="font-family:'Arial Black',Arial,sans-serif; font-weight:900; line-height:1.4; padding:4mm;">
-      <div style="font-size:22px;">${dateStr}</div>
-      <table style="width:100%; font-size:28px; border-collapse:collapse;">
-        <tr>
-          <td style="font-weight:900;">${escHTML(resa.nom)}</td>
-          <td style="text-align:right; white-space:nowrap; font-weight:900;">${resa.couverts}p</td>
-        </tr>
-      </table>
-      ${resa.comment ? `<div style="font-size:22px;">${escHTML(resa.comment)}</div>` : ''}
-    </div>
-  `;
-  $('print-area').innerHTML = html;
-  window.print();
+function buildResaCard(r, newId=null) {
+  const status = r.status || 'prise';
+  return `
+    <div class="resa-card${newId===r.id?' new-flash':''}" id="card-${r.id}">
+      <div class="resa-time">${r.heure ? r.heure.slice(0,5).replace(':','h') : '—'}</div>
+      <div class="resa-main">
+        <div class="resa-name">${escHTML(r.nom)}</div>
+        <div class="resa-meta">
+          <span class="couverts">👥 ${r.couverts} pers.</span>
+          ${r.tel ? `<span>📞 ${escHTML(r.tel)}</span>` : ''}
+        </div>
+        ${r.comment ? `<div class="resa-comment">💬 ${escHTML(r.comment)}</div>` : ''}
+      </div>
+      <div class="status-steps">
+        <div class="status-step${status==='prise'   ? ' active-prise'   : ''}" onclick="setStatus(event,${r.id},'prise')">📋 Prise</div>
+        <div class="status-step${status==='notee'   ? ' active-notee'   : ''}" onclick="setStatus(event,${r.id},'notee')">✏️ Cahier</div>
+        <div class="status-step${status==='arrivee' ? ' active-arrivee' : ''}" onclick="setStatus(event,${r.id},'arrivee')">✅ Arrivée</div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-print" onclick="event.stopPropagation();imprimerConfirmation({nom:'${escHTML(r.nom)}',date:'${r.date}',couverts:${r.couverts},heure:${r.heure?`'${r.heure}'`:null},comment:${r.comment?`'${escHTML(r.comment)}'`:null}})">🖨️</button>
+        <button class="btn-edit" onclick="openEdit(${r.id})">✏️</button>
+        <button class="btn-del" onclick="deleteResa(${r.id},'${escHTML(r.nom)}')">✕</button>
+      </div>
+    </div>`;
 }
 
 function imprimerSemaine() {

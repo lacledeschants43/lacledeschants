@@ -2036,26 +2036,15 @@ function imprimerConfirmation(resa) {
   const dateStr = `${JOURS_FULL[d.getDay()]} ${d.getDate()} ${MOIS_LONG[d.getMonth()]} ${d.getFullYear()}`;
 
   let html = `
-    <hr class="ticket-sep">
-    <div class="ticket-big-label">Date</div>
-    <div class="ticket-big-value">${dateStr}</div>
-    <hr class="ticket-sep">
-    <div class="ticket-big-label">Nom</div>
-    <div class="ticket-big-value">${escHTML(resa.nom)}</div>
-    <hr class="ticket-sep">
-    <div class="ticket-big-label">Personnes</div>
-    <div class="ticket-big-value">${resa.couverts}</div>
+    <div style="font-family:'Arial Black',Arial,sans-serif; font-size:28px; font-weight:900; line-height:1.4; padding:4mm;">
+      <div>${dateStr}</div>
+      <div style="display:flex; justify-content:space-between; gap:8px;">
+        <span>${escHTML(resa.nom)}</span>
+        <span style="white-space:nowrap;">${resa.couverts}p</span>
+      </div>
+      ${resa.comment ? `<div style="font-size:22px;">${escHTML(resa.comment)}</div>` : ''}
+    </div>
   `;
-
-  if (resa.comment) {
-    html += `
-    <hr class="ticket-sep">
-    <div class="ticket-big-label">Commentaire</div>
-    <div class="ticket-big-value" style="font-size:22px;">${escHTML(resa.comment)}</div>
-    `;
-  }
-
-  html += `<hr class="ticket-sep">`;
 
   $('print-area').innerHTML = html;
   window.print();

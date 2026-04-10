@@ -1316,6 +1316,9 @@ function buildHeures(id) {
 buildHeures('f-heure'); buildHeures('edit-heure');
 
 // ── CALENDRIER CUSTOM (partagé main + edit) ───────────────
+let fermetures = [];
+let joursFermesAdmin = new Set();
+
 const CAL_MOIS_NOMS  = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 const CAL_JOURS_LONG = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const CAL_MOIS_LONG  = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
@@ -2430,9 +2433,6 @@ async function initSalle() {
 }
 
 // ── FERMETURES ────────────────────────────────────────────
-let fermetures = [];
-let joursFermesAdmin = new Set();
-
 async function loadFermetures() {
   try {
     const r = await fetch(FERM_URL + '?order=date.asc', { headers: HEADERS });

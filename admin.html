@@ -103,6 +103,58 @@
   .field-error.visible { display:block; }
   input.invalid, select.invalid { border-color:var(--error); }
 
+  /* ── CALENDRIER CUSTOM ADMIN ── */
+  .cal-wrap { position:relative; }
+  .cal-display {
+    width:100%; padding:11px 14px; border:1.5px solid var(--gris-clair); border-radius:6px;
+    font-family:'Lato',sans-serif; font-size:0.95rem; color:var(--noir);
+    background:var(--creme); cursor:pointer; text-align:left;
+    display:flex; align-items:center; justify-content:space-between;
+    transition:border-color 0.2s, box-shadow 0.2s; outline:none;
+    -webkit-appearance:none; appearance:none;
+  }
+  .cal-display:focus, .cal-display.open { border-color:var(--bordeaux); box-shadow:0 0 0 3px rgba(107,26,42,0.08); background:var(--blanc); }
+  .cal-display.invalid { border-color:var(--error); }
+  .cal-display-icon { font-size:0.9rem; opacity:0.5; }
+  .cal-popover {
+    position:absolute; top:calc(100% + 6px); left:0; z-index:500;
+    background:var(--blanc); border-radius:12px;
+    box-shadow:0 12px 40px rgba(107,26,42,0.18), 0 2px 8px rgba(0,0,0,0.08);
+    border:1.5px solid var(--gris-clair);
+    padding:16px; width:296px;
+    display:none; animation:calIn 0.18s ease;
+  }
+  @media(max-width:400px){ .cal-popover { width:calc(100vw - 32px); } }
+  @keyframes calIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+  .cal-popover.open { display:block; }
+  .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .cal-nav-btn {
+    background:none; border:1.5px solid var(--gris-clair); border-radius:6px;
+    width:30px; height:30px; cursor:pointer; font-size:1rem; color:var(--bordeaux);
+    display:flex; align-items:center; justify-content:center;
+    transition:all 0.15s; font-weight:700; line-height:1;
+  }
+  .cal-nav-btn:hover { background:var(--bordeaux); color:var(--blanc); border-color:var(--bordeaux); }
+  .cal-month-label { font-family:'Playfair Display',serif; font-size:0.95rem; color:var(--bordeaux); font-weight:700; text-align:center; flex:1; }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+  .cal-dh { text-align:center; font-size:0.62rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--gris); padding:4px 0 6px; }
+  .cal-dh.samedi { color:#ccc; }
+  .cal-day {
+    aspect-ratio:1; border-radius:6px; border:none; background:none;
+    font-family:'Lato',sans-serif; font-size:0.82rem; font-weight:700;
+    cursor:pointer; transition:all 0.12s; color:var(--noir);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cal-day:hover:not(:disabled):not(.empty) { background:rgba(107,26,42,0.1); color:var(--bordeaux); }
+  .cal-day.today { border:1.5px solid var(--bordeaux); color:var(--bordeaux); }
+  .cal-day.selected { background:var(--bordeaux) !important; color:var(--blanc) !important; box-shadow:0 2px 8px rgba(107,26,42,0.35); }
+  .cal-day:disabled { color:#ccc; cursor:not-allowed; }
+  .cal-day.samedi-day:disabled {
+    background:repeating-linear-gradient(135deg, transparent, transparent 4px, rgba(0,0,0,0.05) 4px, rgba(0,0,0,0.05) 5px);
+    color:#ddd;
+  }
+  .cal-day.empty { cursor:default; visibility:hidden; }
+
   .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--noir); color:var(--blanc); padding:14px 24px; border-radius:8px; font-size:0.9rem; box-shadow:0 8px 24px rgba(0,0,0,0.25); z-index:999; transition:transform 0.35s cubic-bezier(.175,.885,.32,1.275); max-width:90vw; text-align:center; border-left:4px solid var(--or); }
   .toast.show { transform:translateX(-50%) translateY(0); }
   .toast.success { border-left-color:#4caf8b; }
@@ -624,7 +676,21 @@
 </div>
         <div class="form-group">
           <label for="f-date">Date <span class="form-required">*</span></label>
-          <input type="date" id="f-date">
+          <div class="cal-wrap" id="cal-wrap-main">
+            <button type="button" class="cal-display" id="cal-display-main" onclick="toggleCal('main')">
+              <span id="cal-display-txt-main">Choisir une date</span>
+              <span class="cal-display-icon">📅</span>
+            </button>
+            <div class="cal-popover" id="cal-popover-main">
+              <div class="cal-nav">
+                <button type="button" class="cal-nav-btn" onclick="calChangeMonth('main',-1)">‹</button>
+                <div class="cal-month-label" id="cal-month-label-main">—</div>
+                <button type="button" class="cal-nav-btn" onclick="calChangeMonth('main',1)">›</button>
+              </div>
+              <div class="cal-grid" id="cal-grid-main"></div>
+            </div>
+          </div>
+          <input type="hidden" id="f-date">
           <span class="field-error" id="err-date">Veuillez choisir une date.</span>
         </div>
         <div class="form-group">
@@ -719,7 +785,24 @@
     <input type="hidden" id="edit-id">
     <div class="modal-grid">
       <div class="form-group full"><label>Nom <span class="form-required">*</span></label><input type="text" id="edit-nom"></div>
-      <div class="form-group"><label>Date <span class="form-required">*</span></label><input type="date" id="edit-date"></div>
+      <div class="form-group">
+        <label>Date <span class="form-required">*</span></label>
+        <div class="cal-wrap" id="cal-wrap-edit">
+          <button type="button" class="cal-display" id="cal-display-edit" onclick="toggleCal('edit')">
+            <span id="cal-display-txt-edit">Choisir une date</span>
+            <span class="cal-display-icon">📅</span>
+          </button>
+          <div class="cal-popover" id="cal-popover-edit">
+            <div class="cal-nav">
+              <button type="button" class="cal-nav-btn" onclick="calChangeMonth('edit',-1)">‹</button>
+              <div class="cal-month-label" id="cal-month-label-edit">—</div>
+              <button type="button" class="cal-nav-btn" onclick="calChangeMonth('edit',1)">›</button>
+            </div>
+            <div class="cal-grid" id="cal-grid-edit"></div>
+          </div>
+        </div>
+        <input type="hidden" id="edit-date">
+      </div>
       <div class="form-group"><label>Personnes <span class="form-required">*</span></label><input type="number" id="edit-couverts" min="1" max="75"></div>
       <div class="form-group"><label>Heure</label><div class="select-wrap"><select id="edit-heure"><option value="">— Sans préférence —</option></select></div></div>
       <div class="form-group"><label>Téléphone</label><input type="tel" id="edit-tel"></div>
@@ -1176,8 +1259,99 @@ function buildHeures(id) {
   }
 }
 buildHeures('f-heure'); buildHeures('edit-heure');
-$('f-date').value = new Date().toISOString().split('T')[0];
-$('f-date').min   = new Date().toISOString().split('T')[0];
+
+// ── CALENDRIER CUSTOM (partagé main + edit) ───────────────
+const CAL_MOIS_NOMS  = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const CAL_JOURS_LONG = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const CAL_MOIS_LONG  = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+const calState = {
+  main: { year:0, month:0, selected:null },
+  edit: { year:0, month:0, selected:null }
+};
+
+function calToDateStr(d) { return d.toISOString().split('T')[0]; }
+
+function initCalMain() {
+  const today = new Date();
+  calState.main.year  = today.getFullYear();
+  calState.main.month = today.getMonth();
+  const d = new Date(today);
+  if (d.getDay() === 6) d.setDate(d.getDate() + 1);
+  calSelectDate('main', calToDateStr(d), false);
+  renderCal('main');
+}
+
+function toggleCal(key) {
+  const pop = $('cal-popover-'+key), btn = $('cal-display-'+key);
+  const isOpen = pop.classList.contains('open');
+  // Ferme tous les autres
+  ['main','edit'].forEach(k => {
+    $('cal-popover-'+k).classList.remove('open');
+    $('cal-display-'+k).classList.remove('open');
+  });
+  if (!isOpen) { renderCal(key); pop.classList.add('open'); btn.classList.add('open'); }
+}
+
+function calChangeMonth(key, dir) {
+  calState[key].month += dir;
+  if (calState[key].month < 0)  { calState[key].month = 11; calState[key].year--; }
+  if (calState[key].month > 11) { calState[key].month = 0;  calState[key].year++; }
+  renderCal(key);
+}
+
+function renderCal(key) {
+  const s = calState[key];
+  $('cal-month-label-'+key).textContent = CAL_MOIS_NOMS[s.month] + ' ' + s.year;
+  const todayStr = calToDateStr(new Date());
+  const firstDow = new Date(s.year, s.month, 1).getDay();
+  const daysInMonth = new Date(s.year, s.month + 1, 0).getDate();
+  let html = '';
+  ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'].forEach((h,i) => {
+    html += `<div class="cal-dh${i===6?' samedi':''}">${h}</div>`;
+  });
+  for (let i=0; i<firstDow; i++) html += `<button class="cal-day empty" disabled></button>`;
+  for (let d=1; d<=daysInMonth; d++) {
+    const ds = `${s.year}-${String(s.month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow = new Date(ds+'T12:00:00').getDay();
+    const isSat  = dow === 6;
+    const isPast = ds < todayStr;
+    const isSel  = ds === s.selected;
+    const isToday = ds === todayStr;
+    let cls = 'cal-day';
+    if (isSat)   cls += ' samedi-day';
+    if (isSel)   cls += ' selected';
+    else if (isToday && !isSat && !isPast) cls += ' today';
+    const disabled = isSat || isPast;
+    html += `<button type="button" class="${cls}" ${disabled?'disabled':''} ${!disabled?`onclick="calSelectDate('${key}','${ds}')"`:''} >${d}</button>`;
+  }
+  $('cal-grid-'+key).innerHTML = html;
+}
+
+function calSelectDate(key, ds, close=true) {
+  calState[key].selected = ds;
+  const hiddenId = key === 'main' ? 'f-date' : 'edit-date';
+  $(hiddenId).value = ds;
+  const d = new Date(ds+'T12:00:00');
+  $('cal-display-txt-'+key).textContent = `${CAL_JOURS_LONG[d.getDay()]} ${d.getDate()} ${CAL_MOIS_LONG[d.getMonth()]} ${d.getFullYear()}`;
+  $('cal-display-'+key).classList.remove('invalid');
+  calState[key].year = d.getFullYear(); calState[key].month = d.getMonth();
+  if (close) { $('cal-popover-'+key).classList.remove('open'); $('cal-display-'+key).classList.remove('open'); }
+}
+
+// Fermer si clic en dehors
+document.addEventListener('click', e => {
+  ['main','edit'].forEach(key => {
+    const wrap = $('cal-wrap-'+key);
+    if (wrap && !wrap.contains(e.target)) {
+      $('cal-popover-'+key).classList.remove('open');
+      $('cal-display-'+key).classList.remove('open');
+    }
+  });
+});
+
+// Init au démarrage
+initCalMain();
 
 
 async function submitReservation() {
@@ -1188,8 +1362,15 @@ async function submitReservation() {
    {id:'f-phone',err:'err-phone',t:v=>v.trim().length>=8}
   ].forEach(c => {
     const el=$(c.id),er=$(c.err);
-    if(!c.t(el.value)){el.classList.add('invalid');er.classList.add('visible');ok=false;}
-    else{el.classList.remove('invalid');er.classList.remove('visible');}
+    if(!c.t(el.value)){
+      if(c.id==='f-date') $('cal-display-main').classList.add('invalid');
+      else el.classList.add('invalid');
+      if(er) er.classList.add('visible'); ok=false;
+    } else {
+      if(c.id==='f-date') $('cal-display-main').classList.remove('invalid');
+      else el.classList.remove('invalid');
+      if(er) er.classList.remove('visible');
+    }
   });
   if (!ok) { showToast('Veuillez remplir les champs obligatoires.','error'); return; }
 
@@ -1209,6 +1390,7 @@ async function submitReservation() {
     await apiInsert(resaData);
     $('f-nom').value=''; $('f-couverts').value='';
     $('f-heure').value=''; $('f-phone').value=''; $('f-comment').value='';
+    initCalMain();
     showToast('✓ Réservation enregistrée !','success');
   } catch(e) {
     showToast('Erreur : '+e.message,'error');
@@ -1551,7 +1733,13 @@ async function deleteResa(id, nom, skipConfirm=false) {
 function openEdit(id) {
   const r = allResas.find(x=>x.id===id); if(!r) return;
   $('edit-id').value=r.id; $('edit-nom').value=r.nom;
-  $('edit-date').value=r.date; $('edit-couverts').value=r.couverts;
+  // Calendrier edit
+  calState.edit.selected = r.date;
+  $('edit-date').value = r.date;
+  const d = new Date(r.date+'T12:00:00');
+  $('cal-display-txt-edit').textContent = `${CAL_JOURS_LONG[d.getDay()]} ${d.getDate()} ${CAL_MOIS_LONG[d.getMonth()]} ${d.getFullYear()}`;
+  calState.edit.year = d.getFullYear(); calState.edit.month = d.getMonth();
+  $('edit-couverts').value=r.couverts;
   $('edit-heure').value=r.heure||''; $('edit-tel').value=r.tel||''; $('edit-comment').value=r.comment||'';
   $('modal-overlay').classList.add('open');
 }

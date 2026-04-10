@@ -62,6 +62,8 @@
   .nav-tab { background: none; border: none; color: #aaa; font-family: 'Lato', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 8px 20px; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; }
   .nav-tab:hover { color: var(--blanc); }
   .nav-tab.active { color: var(--or); border-bottom-color: var(--or); }
+  .btn-logout { background: none; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 6px; color: rgba(255,255,255,0.5); font-family: 'Lato', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 12px; cursor: pointer; transition: all 0.2s; margin-left: 12px; }
+  .btn-logout:hover { border-color: #c0392b; color: #c0392b; }
   .section { display: none; } .section.active { display: block; }
 
   .hero { background: linear-gradient(135deg, var(--bordeaux-dark) 0%, var(--bordeaux) 60%, var(--bordeaux-light) 100%); padding: 56px 32px 40px; text-align: center; position: relative; overflow: hidden; }
@@ -578,7 +580,9 @@
   <div class="login-box">
     <div class="login-logo">La Clé des Chants</div>
     <div class="login-sub">Espace administration</div>
-    <label class="login-label" for="login-pwd">Mot de passe</label>
+    <label class="login-label" for="login-id">Identifiant</label>
+    <input type="email" class="login-input" id="login-id" placeholder="adresse@email.com" onkeydown="if(event.key==='Enter')verifierMDP()" style="letter-spacing:0.05em;">
+    <label class="login-label" for="login-pwd" style="margin-top:8px;">Mot de passe</label>
     <input type="password" class="login-input" id="login-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')verifierMDP()">
     <button class="login-btn" onclick="verifierMDP()">Accéder</button>
     <div class="login-err" id="login-err"></div>
@@ -596,6 +600,7 @@
     <button class="nav-tab" onclick="showTab('salle',this)">Plan de salle</button>
     <button class="nav-tab" onclick="showTab('site',this)">🌐 Site</button>
   </div>
+  <button class="btn-logout" onclick="seDeconnecter()">⎋ Déconnexion</button>
 </nav>
 
 <div class="section active" id="section-reservation">
@@ -2180,20 +2185,32 @@ async function initSalle() {
 
 // ── MOT DE PASSE ADMIN ────────────────────────────────────
 // Change "lacledeschants2024" par ton mot de passe souhaité
+const ADMIN_ID       = 'lacledeschants43@gmail.com';
+
+function seDeconnecter() {
+  if (!confirm('Se déconnecter ?')) return;
+  localStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
 const ADMIN_PASSWORD = 'lacledeschants2024';
 const SESSION_KEY    = 'cdc_admin_ok';
 
 function verifierMDP() {
+  const id  = $('login-id').value.trim();
   const pwd = $('login-pwd').value;
-  if (pwd === ADMIN_PASSWORD) {
-    sessionStorage.setItem(SESSION_KEY, '1');
+  if (id === ADMIN_ID && pwd === ADMIN_PASSWORD) {
+    localStorage.setItem(SESSION_KEY, '1');
     $('login-overlay').style.display = 'none';
     demarrerApp();
   } else {
+    $('login-id').classList.add('error');
     $('login-pwd').classList.add('error');
-    $('login-err').textContent = 'Mot de passe incorrect.';
+    $('login-err').textContent = 'Identifiant ou mot de passe incorrect.';
     $('login-pwd').value = '';
-    setTimeout(() => $('login-pwd').classList.remove('error'), 500);
+    setTimeout(() => {
+      $('login-id').classList.remove('error');
+      $('login-pwd').classList.remove('error');
+    }, 500);
   }
 }
 
@@ -2208,7 +2225,7 @@ async function demarrerApp() {
 
 // ── INIT ──────────────────────────────────────────────────
 // Vérifie si déjà connecté dans cette session
-if (sessionStorage.getItem(SESSION_KEY) === '1') {
+if (localStorage.getItem(SESSION_KEY) === '1') {
   $('login-overlay').style.display = 'none';
   demarrerApp();
 }

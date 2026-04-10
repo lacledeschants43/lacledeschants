@@ -153,6 +153,10 @@
     background:repeating-linear-gradient(135deg, transparent, transparent 4px, rgba(0,0,0,0.05) 4px, rgba(0,0,0,0.05) 5px);
     color:#ddd;
   }
+  .cal-day.ferme-day:disabled {
+    background:repeating-linear-gradient(135deg, rgba(192,57,43,0.06), rgba(192,57,43,0.06) 4px, transparent 4px, transparent 5px);
+    color:#e0b0b0;
+  }
   .cal-day.empty { cursor:default; visibility:hidden; }
 
   .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--noir); color:var(--blanc); padding:14px 24px; border-radius:8px; font-size:0.9rem; box-shadow:0 8px 24px rgba(0,0,0,0.25); z-index:999; transition:transform 0.35s cubic-bezier(.175,.885,.32,1.275); max-width:90vw; text-align:center; border-left:4px solid var(--or); }
@@ -618,6 +622,35 @@
   .site-saved-msg { font-size:0.82rem; color:var(--success); display:none; }
   .site-saved-msg.visible { display:block; }
 
+  /* ── FERMETURES ── */
+  .ferm-add-bar { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px; }
+  .ferm-add-bar .site-field { flex:1; min-width:140px; }
+  .btn-ferm-add {
+    background:var(--bordeaux); color:var(--blanc); border:none; border-radius:6px;
+    padding:10px 18px; font-family:'Lato',sans-serif; font-size:0.82rem; font-weight:700;
+    letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; transition:background 0.2s;
+    white-space:nowrap; height:40px; align-self:flex-end;
+  }
+  .btn-ferm-add:hover { background:var(--bordeaux-light); }
+  .ferm-list { display:flex; flex-direction:column; gap:8px; }
+  .ferm-item {
+    background:var(--blanc); border:1.5px solid var(--gris-clair); border-radius:8px;
+    padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+    transition:border-color 0.15s;
+  }
+  .ferm-item:hover { border-color:var(--bordeaux); }
+  .ferm-item-left { display:flex; align-items:center; gap:12px; }
+  .ferm-item-date { font-family:'Playfair Display',serif; font-size:0.95rem; color:var(--bordeaux); font-weight:700; }
+  .ferm-item-motif { font-size:0.82rem; color:var(--gris); font-style:italic; margin-top:2px; }
+  .btn-ferm-del {
+    background:none; border:1.5px solid var(--gris-clair); border-radius:6px;
+    padding:5px 10px; font-size:0.8rem; cursor:pointer; color:var(--gris);
+    font-family:'Lato',sans-serif; font-weight:700; transition:all 0.2s; flex-shrink:0;
+  }
+  .btn-ferm-del:hover { border-color:var(--error); color:var(--error); }
+  .ferm-empty { text-align:center; padding:28px; color:var(--gris); font-size:0.88rem; font-style:italic; }
+  .ferm-loading { text-align:center; padding:20px; color:var(--gris); font-size:0.82rem; }
+
   ::-webkit-scrollbar { width:6px; }
   ::-webkit-scrollbar-track { background:var(--creme); }
   ::-webkit-scrollbar-thumb { background:var(--gris-clair); border-radius:3px; }
@@ -1020,6 +1053,27 @@
       <button class="btn-site-save" id="btn-site-save" onclick="saveSiteConfig()">💾 Publier les modifications</button>
       <span class="site-saved-msg" id="site-saved-msg">✓ Publié avec succès !</span>
     </div>
+
+    <!-- ── FERMETURES EXCEPTIONNELLES ── -->
+    <div class="site-section-title">🔒 Jours fermés</div>
+    <p style="font-size:0.82rem;color:var(--gris);margin-bottom:16px;line-height:1.6;">
+      Ajoutez ici les jours de fermeture exceptionnelle ou de congés. Ces dates seront automatiquement grisées et non réservables sur la page client.
+    </p>
+    <div class="ferm-add-bar">
+      <div class="site-field">
+        <label>Date de fermeture</label>
+        <input type="date" id="ferm-date">
+      </div>
+      <div class="site-field" style="flex:2">
+        <label>Motif (optionnel)</label>
+        <input type="text" id="ferm-motif" placeholder="Ex : Congés, Férié, Fermeture exceptionnelle…" maxlength="80">
+      </div>
+      <button class="btn-ferm-add" onclick="ajouterFermeture()">＋ Ajouter</button>
+    </div>
+    <div class="ferm-list" id="ferm-list">
+      <div class="ferm-loading">Chargement…</div>
+    </div>
+
   </div>
 </div>
 
@@ -1030,6 +1084,7 @@
 <script>
 
 const API_URL = 'https://zwjgenpxsjvzmxqoxepv.supabase.co/rest/v1/reservations';
+const FERM_URL = 'https://zwjgenpxsjvzmxqoxepv.supabase.co/rest/v1/fermetures';
 const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3amdlbnB4c2p2em14cW94ZXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMDQ1NTYsImV4cCI6MjA5MDg4MDU1Nn0.GtQx5lQbFmPFvH_ji-4T9bZ3xbL8DPYpUanKy_D4Z9c';
 const HEADERS = {
   'apikey': API_KEY,
@@ -1240,7 +1295,7 @@ function showTab(tab, btn) {
   btn.classList.add('active');
   if (tab === 'clients') { renderClients(); }
   if (tab === 'salle') { initSalle(); }
-  if (tab === 'site')  { loadSiteConfig(); }
+  if (tab === 'site')  { loadSiteConfig(); loadFermetures(); }
 }
 
 function escHTML(s) {
@@ -1314,16 +1369,19 @@ function renderCal(key) {
   for (let d=1; d<=daysInMonth; d++) {
     const ds = `${s.year}-${String(s.month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const dow = new Date(ds+'T12:00:00').getDay();
-    const isSat  = dow === 6;
-    const isPast = ds < todayStr;
-    const isSel  = ds === s.selected;
+    const isSat   = dow === 6;
+    const isFerme = joursFermesAdmin.has(ds);
+    const isPast  = ds < todayStr;
+    const isSel   = ds === s.selected;
     const isToday = ds === todayStr;
+    const disabled = isSat || isPast || isFerme;
     let cls = 'cal-day';
-    if (isSat)   cls += ' samedi-day';
-    if (isSel)   cls += ' selected';
-    else if (isToday && !isSat && !isPast) cls += ' today';
-    const disabled = isSat || isPast;
-    html += `<button type="button" class="${cls}" ${disabled?'disabled':''} ${!disabled?`onclick="calSelectDate('${key}','${ds}')"`:''} >${d}</button>`;
+    if (isSat)          cls += ' samedi-day';
+    else if (isFerme)   cls += ' ferme-day';
+    if (isSel)          cls += ' selected';
+    else if (isToday && !disabled) cls += ' today';
+    const title = isFerme ? `title="Fermé"` : '';
+    html += `<button type="button" class="${cls}" ${disabled?'disabled':''} ${!disabled?`onclick="calSelectDate('${key}','${ds}')"`:''} ${title}>${d}</button>`;
   }
   $('cal-grid-'+key).innerHTML = html;
 }
@@ -2371,6 +2429,81 @@ async function initSalle() {
   setMode('service');
 }
 
+// ── FERMETURES ────────────────────────────────────────────
+let fermetures = [];
+let joursFermesAdmin = new Set();
+
+async function loadFermetures() {
+  try {
+    const r = await fetch(FERM_URL + '?order=date.asc', { headers: HEADERS });
+    if (!r.ok) throw new Error();
+    fermetures = await r.json();
+    joursFermesAdmin = new Set(fermetures.map(f => f.date));
+    renderFermetures();
+  } catch(e) {
+    const el = $('ferm-list');
+    if (el) el.innerHTML = '<div class="ferm-empty">Erreur de chargement.</div>';
+  }
+}
+
+const JOURS_FERM  = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const MOIS_FERM   = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+function renderFermetures() {
+  const list = $('ferm-list');
+  if (!list) return;
+  if (!fermetures.length) {
+    list.innerHTML = '<div class="ferm-empty">Aucun jour fermé enregistré.</div>';
+    return;
+  }
+  list.innerHTML = fermetures.map(f => {
+    const d = new Date(f.date + 'T12:00:00');
+    const label = `${JOURS_FERM[d.getDay()]} ${d.getDate()} ${MOIS_FERM[d.getMonth()]} ${d.getFullYear()}`;
+    return `<div class="ferm-item">
+      <div class="ferm-item-left">
+        <span style="font-size:1.2rem">🔒</span>
+        <div>
+          <div class="ferm-item-date">${label}</div>
+          ${f.motif ? `<div class="ferm-item-motif">${escHTML(f.motif)}</div>` : ''}
+        </div>
+      </div>
+      <button class="btn-ferm-del" onclick="supprimerFermeture(${f.id}, '${label}')">✕ Supprimer</button>
+    </div>`;
+  }).join('');
+}
+
+async function ajouterFermeture() {
+  const date  = $('ferm-date').value;
+  const motif = $('ferm-motif').value.trim();
+  if (!date) { showToast('Veuillez choisir une date.', 'error'); return; }
+  if (joursFermesAdmin.has(date)) { showToast('Cette date est déjà fermée.', 'error'); return; }
+  try {
+    const r = await fetch(FERM_URL, {
+      method: 'POST', headers: HEADERS,
+      body: JSON.stringify({ date, motif: motif || null })
+    });
+    if (!r.ok) throw new Error();
+    $('ferm-date').value = '';
+    $('ferm-motif').value = '';
+    showToast('✓ Jour fermé ajouté !', 'success');
+    await loadFermetures();
+  } catch(e) {
+    showToast('Erreur lors de l\'ajout.', 'error');
+  }
+}
+
+async function supprimerFermeture(id, label) {
+  if (!confirm(`Supprimer la fermeture du ${label} ?`)) return;
+  try {
+    const r = await fetch(FERM_URL + '?id=eq.' + id, { method: 'DELETE', headers: HEADERS });
+    if (!r.ok) throw new Error();
+    showToast('Fermeture supprimée.', 'success');
+    await loadFermetures();
+  } catch(e) {
+    showToast('Erreur lors de la suppression.', 'error');
+  }
+}
+
 // ── MOT DE PASSE ADMIN ────────────────────────────────────
 // Change "lacledeschants2024" par ton mot de passe souhaité
 const ADMIN_ID       = 'lacledeschants43@gmail.com';
@@ -2404,6 +2537,7 @@ function verifierMDP() {
 
 async function demarrerApp() {
   await loadPlan();
+  await loadFermetures();
   // Démarre en vue "Aujourd'hui"
   $('day-nav-bar').style.display   = 'flex';
   $('week-nav-bar').style.display  = 'none';

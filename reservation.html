@@ -181,6 +181,10 @@
     background:repeating-linear-gradient(135deg, transparent, transparent 4px, rgba(0,0,0,0.05) 4px, rgba(0,0,0,0.05) 5px);
     color:#ddd;
   }
+  .cal-day.ferme-day:disabled {
+    background:repeating-linear-gradient(135deg, rgba(192,57,43,0.06), rgba(192,57,43,0.06) 4px, transparent 4px, transparent 5px);
+    color:#e0b0b0;
+  }
   .cal-day.empty { cursor:default; visibility:hidden; }
 </style>
 </head>
@@ -308,6 +312,7 @@
 
 <script>
 const API_URL = 'https://zwjgenpxsjvzmxqoxepv.supabase.co/rest/v1/reservations';
+const FERM_URL = 'https://zwjgenpxsjvzmxqoxepv.supabase.co/rest/v1/fermetures';
 const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3amdlbnB4c2p2em14cW94ZXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMDQ1NTYsImV4cCI6MjA5MDg4MDU1Nn0.GtQx5lQbFmPFvH_ji-4T9bZ3xbL8DPYpUanKy_D4Z9c';
 const HEADERS = { 'apikey':API_KEY, 'Authorization':'Bearer '+API_KEY, 'Content-Type':'application/json', 'Prefer':'return=representation' };
 
@@ -325,6 +330,19 @@ const $ = id => document.getElementById(id);
   }
 })();
 
+// ── FERMETURES ────────────────────────────────────────────
+let joursFermes = new Set(); // ensemble de dates 'YYYY-MM-DD'
+
+async function loadFermetures() {
+  try {
+    const r = await fetch(FERM_URL + '?select=date', { headers: HEADERS });
+    if (r.ok) {
+      const data = await r.json();
+      joursFermes = new Set(data.map(f => f.date));
+    }
+  } catch(e) {}
+}
+
 // ── CALENDRIER CUSTOM ─────────────────────────────────────
 const CAL_MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 const CAL_JOURS_LONG = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
@@ -333,13 +351,16 @@ let calYear, calMonth, calSelected = null;
 
 function toDateStr(d) { return d.toISOString().split('T')[0]; }
 
-function initCal() {
+async function initCal() {
+  await loadFermetures();
   const today = new Date();
   calYear  = today.getFullYear();
   calMonth = today.getMonth();
-  // Valeur par défaut = aujourd'hui, ou dimanche si aujourd'hui est samedi
+  // Valeur par défaut = aujourd'hui, ou demain si samedi ou fermé
   const d = new Date(today);
-  if (d.getDay() === 6) d.setDate(d.getDate() + 1);
+  while (d.getDay() === 6 || joursFermes.has(toDateStr(d))) {
+    d.setDate(d.getDate() + 1);
+  }
   calSelectDate(toDateStr(d), false);
   renderCal();
 }
@@ -371,16 +392,19 @@ function renderCal() {
   for (let d=1; d<=daysInMonth; d++) {
     const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const dow = new Date(ds+'T12:00:00').getDay();
-    const isSat  = dow === 6;
-    const isPast = ds < todayStr;
-    const isSel  = ds === calSelected;
-    const isToday = ds === todayStr;
+    const isSat    = dow === 6;
+    const isFerme  = joursFermes.has(ds);
+    const isPast   = ds < todayStr;
+    const isSel    = ds === calSelected;
+    const isToday  = ds === todayStr;
+    const disabled = isSat || isPast || isFerme;
     let cls = 'cal-day';
-    if (isSat)   cls += ' samedi-day';
-    if (isSel)   cls += ' selected';
-    else if (isToday && !isSat && !isPast) cls += ' today';
-    const disabled = isSat || isPast;
-    html += `<button type="button" class="${cls}" ${disabled?'disabled':''} ${(!disabled)?`onclick="calSelectDate('${ds}')"`:''}>${d}</button>`;
+    if (isSat)          cls += ' samedi-day';
+    else if (isFerme)   cls += ' ferme-day';
+    if (isSel)          cls += ' selected';
+    else if (isToday && !disabled) cls += ' today';
+    const title = isFerme ? 'title="Fermé"' : '';
+    html += `<button type="button" class="${cls}" ${disabled?'disabled':''} ${!disabled?`onclick="calSelectDate('${ds}')"`:''}  ${title}>${d}</button>`;
   }
   $('cal-grid').innerHTML = html;
 }

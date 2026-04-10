@@ -129,6 +129,25 @@
   .toast.ok { border-left-color:#4caf8b; }
   .toast.ko { border-left-color:var(--error); }
 
+  /* ── BANNIÈRE FERMETURE ── */
+  .ferm-banner {
+    display:none;
+    background:linear-gradient(135deg,#4A0F1C,#6B1A2A);
+    color:#fff; padding:14px 40px 14px 20px; text-align:center;
+    border-bottom:3px solid var(--or); position:relative;
+  }
+  .ferm-banner.visible { display:block; }
+  .ferm-banner-inner { max-width:600px; margin:0 auto; display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
+  .ferm-banner-icon { font-size:1.2rem; flex-shrink:0; }
+  .ferm-banner-text strong { font-family:'Playfair Display',serif; font-size:1rem; display:block; margin-bottom:2px; }
+  .ferm-banner-text { font-size:0.85rem; line-height:1.5; }
+  .ferm-banner-close {
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    background:none; border:none; color:rgba(255,255,255,0.6); font-size:1.2rem;
+    cursor:pointer; padding:4px; transition:color 0.2s; line-height:1;
+  }
+  .ferm-banner-close:hover { color:#fff; }
+
   /* ── CALENDRIER CUSTOM ── */
   .cal-wrap { position:relative; }
   .cal-display {
@@ -200,6 +219,18 @@
   </div>
   <div class="logo-horaires">🕐 Lundi au Vendredi ainsi que le Dimanche · 11h45 – 13h30 </div>
 </header>
+
+<!-- Bannière fermeture -->
+<div class="ferm-banner" id="ferm-banner">
+  <div class="ferm-banner-inner">
+    <div class="ferm-banner-icon">🔒</div>
+    <div class="ferm-banner-text">
+      <strong id="ferm-banner-titre">Fermeture exceptionnelle</strong>
+      <span id="ferm-banner-detail"></span>
+    </div>
+  </div>
+  <button class="ferm-banner-close" onclick="this.parentElement.classList.remove('visible')" title="Fermer">✕</button>
+</div>
 
 <main class="main">
   <div class="card">
@@ -429,6 +460,7 @@ function calSelectDate(ds, close=true) {
 
 // Fermer si clic en dehors
 initCal();
+afficherBanniereConges();
 
 document.addEventListener('click', e => {
   const wrap = document.querySelector('.cal-wrap');
@@ -507,6 +539,50 @@ function nouvelleSaisie() {
   $('btn-resa').disabled=false;
   $('btn-txt').textContent='Confirmer ma réservation';
   $('spinner').style.display='none';
+}
+
+// ── BANNIÈRE FERMETURE ────────────────────────────────────
+async function afficherBanniereConges() {
+  try {
+    const r = await fetch(FERM_URL + '?order=date.asc', { headers: HEADERS });
+    if (!r.ok) return;
+    const fermetures = await r.json();
+    const JOURS_B = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+    const MOIS_B  = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    function fmt(ds) {
+      const d = new Date(ds + 'T12:00:00');
+      return `${JOURS_B[d.getDay()]} ${d.getDate()} ${MOIS_B[d.getMonth()]} ${d.getFullYear()}`;
+    }
+    const today = new Date(); today.setHours(0,0,0,0);
+    const PREAVANCE = 7;
+    for (const f of fermetures) {
+      const debut = new Date(f.date + 'T00:00:00');
+      const fin   = f.date_fin ? new Date(f.date_fin + 'T23:59:59') : new Date(f.date + 'T23:59:59');
+      const diffJours = Math.ceil((debut - today) / 86400000);
+      let type = null;
+      if (today >= debut && today <= fin) type = 'en_cours';
+      else if (diffJours > 0 && diffJours <= PREAVANCE) type = 'a_venir';
+      if (!type) continue;
+      const isPeriode = f.date_fin && f.date_fin !== f.date;
+      const motif = f.motif || 'Fermeture exceptionnelle';
+      let titre, detail;
+      if (type === 'en_cours') {
+        titre = `🔒 ${motif}`;
+        detail = isPeriode
+          ? `Le restaurant est fermé du ${fmt(f.date)} au ${fmt(f.date_fin)}.`
+          : `Le restaurant est fermé ce jour : ${fmt(f.date)}.`;
+      } else {
+        titre = `⚠️ Fermeture prochaine — ${motif}`;
+        detail = isPeriode
+          ? `Le restaurant sera fermé du ${fmt(f.date)} au ${fmt(f.date_fin)} (dans ${diffJours} jour${diffJours>1?'s':''}).`
+          : `Le restaurant sera fermé le ${fmt(f.date)} (dans ${diffJours} jour${diffJours>1?'s':''}).`;
+      }
+      $('ferm-banner-titre').textContent = titre;
+      $('ferm-banner-detail').textContent = detail;
+      $('ferm-banner').classList.add('visible');
+      break;
+    }
+  } catch(e) {}
 }
 </script>
 </body>

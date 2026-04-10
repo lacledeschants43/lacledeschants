@@ -90,6 +90,25 @@
   .fb p{font-size:.68rem;}
   .r{opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s;}.r.v{opacity:1;transform:translateY(0);}
   .d1{transition-delay:.1s;}.d2{transition-delay:.2s;}.d3{transition-delay:.3s;}.d4{transition-delay:.4s;}
+
+  /* ── BANNIÈRE FERMETURE ── */
+  .ferm-banner {
+    display:none; position:relative; z-index:99;
+    background:linear-gradient(135deg,#4A0F1C,#6B1A2A);
+    color:#fff; padding:14px 48px 14px 20px;
+    border-bottom:3px solid #C9A84C; text-align:center;
+  }
+  .ferm-banner.visible { display:block; }
+  .ferm-banner-inner { max-width:800px; margin:0 auto; display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
+  .ferm-banner-icon { font-size:1.2rem; flex-shrink:0; }
+  .ferm-banner-text { font-size:0.88rem; line-height:1.5; }
+  .ferm-banner-text strong { font-family:'Playfair Display',serif; font-size:1rem; display:block; margin-bottom:2px; }
+  .ferm-banner-close {
+    position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    background:none; border:none; color:rgba(255,255,255,.6); font-size:1.2rem;
+    cursor:pointer; padding:4px; transition:color .2s; line-height:1;
+  }
+  .ferm-banner-close:hover { color:#fff; }
 </style>
 </head>
 <body>
@@ -102,6 +121,18 @@
     <a href="reservation.html" class="cta">Réserver</a>
   </div>
 </nav>
+
+<!-- Bannière fermeture -->
+<div class="ferm-banner" id="ferm-banner">
+  <div class="ferm-banner-inner">
+    <div class="ferm-banner-icon">🔒</div>
+    <div class="ferm-banner-text">
+      <strong id="ferm-banner-titre"></strong>
+      <span id="ferm-banner-detail"></span>
+    </div>
+  </div>
+  <button class="ferm-banner-close" onclick="this.parentElement.classList.remove('visible')" title="Fermer">✕</button>
+</div>
 <div class="hero">
   <div class="hbg" id="hbg"></div>
   <div class="hov"></div>
@@ -311,6 +342,54 @@ const ob = new IntersectionObserver(e => { e.forEach(x => { if (x.isIntersecting
 document.querySelectorAll('.r').forEach(el => ob.observe(el));
 
 loadSiteConfig();
+
+// ── BANNIÈRE FERMETURE ────────────────────────────────────
+(async function() {
+  const FERM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3amdlbnB4c2p2em14cW94ZXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMDQ1NTYsImV4cCI6MjA5MDg4MDU1Nn0.GtQx5lQbFmPFvH_ji-4T9bZ3xbL8DPYpUanKy_D4Z9c';
+  const FERM_URL = 'https://zwjgenpxsjvzmxqoxepv.supabase.co/rest/v1/fermetures';
+  const JOURS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const MOIS  = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  function fmt(ds) {
+    const d = new Date(ds + 'T12:00:00');
+    return `${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]} ${d.getFullYear()}`;
+  }
+  try {
+    const r = await fetch(FERM_URL + '?order=date.asc', {
+      headers: { 'apikey': FERM_KEY, 'Authorization': 'Bearer ' + FERM_KEY }
+    });
+    if (!r.ok) return;
+    const fermetures = await r.json();
+    const today = new Date(); today.setHours(0,0,0,0);
+    const PREAVANCE = 7;
+    for (const f of fermetures) {
+      const debut = new Date(f.date + 'T00:00:00');
+      const fin   = f.date_fin ? new Date(f.date_fin + 'T23:59:59') : new Date(f.date + 'T23:59:59');
+      const diffJours = Math.ceil((debut - today) / 86400000);
+      let type = null;
+      if (today >= debut && today <= fin)            type = 'en_cours';
+      else if (diffJours > 0 && diffJours <= PREAVANCE) type = 'a_venir';
+      if (!type) continue;
+      const isPeriode = f.date_fin && f.date_fin !== f.date;
+      const motif = f.motif || 'Fermeture exceptionnelle';
+      let titre, detail;
+      if (type === 'en_cours') {
+        titre = `🔒 ${motif}`;
+        detail = isPeriode
+          ? `Le restaurant est fermé du ${fmt(f.date)} au ${fmt(f.date_fin)}.`
+          : `Le restaurant est fermé ce jour : ${fmt(f.date)}.`;
+      } else {
+        titre = `⚠️ Fermeture prochaine — ${motif}`;
+        detail = isPeriode
+          ? `Le restaurant sera fermé du ${fmt(f.date)} au ${fmt(f.date_fin)} (dans ${diffJours} jour${diffJours>1?'s':''}).`
+          : `Le restaurant sera fermé le ${fmt(f.date)} (dans ${diffJours} jour${diffJours>1?'s':''}).`;
+      }
+      document.getElementById('ferm-banner-titre').textContent = titre;
+      document.getElementById('ferm-banner-detail').textContent = detail;
+      document.getElementById('ferm-banner').classList.add('visible');
+      break;
+    }
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>

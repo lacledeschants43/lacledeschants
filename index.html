@@ -95,20 +95,59 @@
   .ferm-banner {
     display:none; position:relative; z-index:99;
     background:linear-gradient(135deg,#4A0F1C,#6B1A2A);
-    color:#fff; padding:14px 48px 14px 20px;
-    border-bottom:3px solid #C9A84C; text-align:center;
+    color:#fff; padding:18px 52px 18px 24px;
+    border-bottom:4px solid #C9A84C; text-align:center;
+    box-shadow:0 4px 20px rgba(74,15,28,0.4);
   }
   .ferm-banner.visible { display:block; }
-  .ferm-banner-inner { max-width:800px; margin:0 auto; display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
-  .ferm-banner-icon { font-size:1.2rem; flex-shrink:0; }
-  .ferm-banner-text { font-size:0.88rem; line-height:1.5; }
-  .ferm-banner-text strong { font-family:'Playfair Display',serif; font-size:1rem; display:block; margin-bottom:2px; }
+  .ferm-banner-inner { max-width:800px; margin:0 auto; display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; }
+  .ferm-banner-icon { font-size:1.5rem; flex-shrink:0; }
+  .ferm-banner-text { font-size:0.92rem; line-height:1.6; }
+  .ferm-banner-text strong { font-family:'Playfair Display',serif; font-size:1.05rem; display:block; margin-bottom:3px; color:#E8C96A; }
   .ferm-banner-close {
-    position:absolute; right:14px; top:50%; transform:translateY(-50%);
-    background:none; border:none; color:rgba(255,255,255,.6); font-size:1.2rem;
-    cursor:pointer; padding:4px; transition:color .2s; line-height:1;
+    position:absolute; right:16px; top:50%; transform:translateY(-50%);
+    background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:50%;
+    color:#fff; font-size:1rem; width:28px; height:28px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:background .2s; line-height:1;
   }
-  .ferm-banner-close:hover { color:#fff; }
+  .ferm-banner-close:hover { background:rgba(255,255,255,0.3); }
+
+  /* ── POPUP FERMETURE ── */
+  .ferm-popup-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65);
+    z-index:1000; align-items:center; justify-content:center; padding:20px;
+  }
+  .ferm-popup-overlay.visible { display:flex; }
+  .ferm-popup {
+    background:#fff; border-radius:16px; overflow:hidden;
+    max-width:440px; width:100%;
+    box-shadow:0 24px 60px rgba(0,0,0,0.4);
+    animation:popIn .3s cubic-bezier(.175,.885,.32,1.275);
+  }
+  @keyframes popIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+  .ferm-popup-head {
+    background:linear-gradient(135deg,#4A0F1C,#6B1A2A);
+    padding:28px 28px 22px; text-align:center; position:relative;
+    border-bottom:4px solid #C9A84C;
+  }
+  .ferm-popup-head-icon { font-size:2.5rem; margin-bottom:10px; }
+  .ferm-popup-head-titre { font-family:'Playfair Display',serif; color:#E8C96A; font-size:1.4rem; font-weight:700; }
+  .ferm-popup-body { padding:24px 28px; }
+  .ferm-popup-msg { font-size:0.95rem; color:#1a1a1a; line-height:1.7; text-align:center; margin-bottom:20px; }
+  .ferm-popup-dates {
+    background:#FAF7F4; border-radius:8px; padding:14px 18px;
+    border-left:4px solid #C9A84C; margin-bottom:20px;
+    font-size:0.88rem; color:#6b6b6b; line-height:1.7;
+  }
+  .ferm-popup-dates strong { color:#6B1A2A; display:block; margin-bottom:2px; font-size:0.92rem; }
+  .btn-ferm-popup-close {
+    width:100%; background:#6B1A2A; color:#fff; border:none; border-radius:8px;
+    padding:14px; font-family:'Lato',sans-serif; font-size:0.9rem; font-weight:700;
+    letter-spacing:0.1em; text-transform:uppercase; cursor:pointer;
+    transition:background .2s; box-shadow:0 4px 14px rgba(107,26,42,0.3);
+  }
+  .btn-ferm-popup-close:hover { background:#8B2A3A; }
 </style>
 </head>
 <body>
@@ -132,6 +171,21 @@
     </div>
   </div>
   <button class="ferm-banner-close" onclick="this.parentElement.classList.remove('visible')" title="Fermer">✕</button>
+</div>
+
+<!-- Popup fermeture (affiché uniquement si fermeture en cours) -->
+<div class="ferm-popup-overlay" id="ferm-popup-overlay">
+  <div class="ferm-popup">
+    <div class="ferm-popup-head">
+      <div class="ferm-popup-head-icon">🔒</div>
+      <div class="ferm-popup-head-titre" id="ferm-popup-titre">Fermeture exceptionnelle</div>
+    </div>
+    <div class="ferm-popup-body">
+      <p class="ferm-popup-msg" id="ferm-popup-msg"></p>
+      <div class="ferm-popup-dates" id="ferm-popup-dates"></div>
+      <button class="btn-ferm-popup-close" onclick="document.getElementById('ferm-popup-overlay').classList.remove('visible')">J'ai compris</button>
+    </div>
+  </div>
 </div>
 <div class="hero">
   <div class="hbg" id="hbg"></div>
@@ -343,7 +397,7 @@ document.querySelectorAll('.r').forEach(el => ob.observe(el));
 
 loadSiteConfig();
 
-// ── BANNIÈRE FERMETURE ────────────────────────────────────
+// ── BANNIÈRE + POPUP FERMETURE ────────────────────────────
 (async function() {
   const FERM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3amdlbnB4c2p2em14cW94ZXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMDQ1NTYsImV4cCI6MjA5MDg4MDU1Nn0.GtQx5lQbFmPFvH_ji-4T9bZ3xbL8DPYpUanKy_D4Z9c';
   const FERM_URL = 'https://zwjgenpxsjvzmxqoxepv.supabase.co/rest/v1/fermetures';
@@ -366,26 +420,42 @@ loadSiteConfig();
       const fin   = f.date_fin ? new Date(f.date_fin + 'T23:59:59') : new Date(f.date + 'T23:59:59');
       const diffJours = Math.ceil((debut - today) / 86400000);
       let type = null;
-      if (today >= debut && today <= fin)            type = 'en_cours';
-      else if (diffJours > 0 && diffJours <= PREAVANCE) type = 'a_venir';
+      if (today >= debut && today <= fin)                type = 'en_cours';
+      else if (diffJours > 0 && diffJours <= PREAVANCE)  type = 'a_venir';
       if (!type) continue;
+
       const isPeriode = f.date_fin && f.date_fin !== f.date;
       const motif = f.motif || 'Fermeture exceptionnelle';
-      let titre, detail;
+      let titre, detail, popupMsg, popupDates;
+
       if (type === 'en_cours') {
         titre = `🔒 ${motif}`;
         detail = isPeriode
           ? `Le restaurant est fermé du ${fmt(f.date)} au ${fmt(f.date_fin)}.`
           : `Le restaurant est fermé ce jour : ${fmt(f.date)}.`;
+        popupMsg = 'Le restaurant est actuellement fermé et ne prend pas de réservations pour le moment.';
+        popupDates = isPeriode
+          ? `<strong>Période de fermeture</strong>Du ${fmt(f.date)} au ${fmt(f.date_fin)}`
+          : `<strong>Jour de fermeture</strong>${fmt(f.date)}`;
       } else {
         titre = `⚠️ Fermeture prochaine — ${motif}`;
         detail = isPeriode
           ? `Le restaurant sera fermé du ${fmt(f.date)} au ${fmt(f.date_fin)} (dans ${diffJours} jour${diffJours>1?'s':''}).`
           : `Le restaurant sera fermé le ${fmt(f.date)} (dans ${diffJours} jour${diffJours>1?'s':''}).`;
       }
+
+      // Bannière (toujours)
       document.getElementById('ferm-banner-titre').textContent = titre;
       document.getElementById('ferm-banner-detail').textContent = detail;
       document.getElementById('ferm-banner').classList.add('visible');
+
+      // Popup uniquement si fermeture EN COURS
+      if (type === 'en_cours') {
+        document.getElementById('ferm-popup-titre').textContent = motif;
+        document.getElementById('ferm-popup-msg').textContent = popupMsg;
+        document.getElementById('ferm-popup-dates').innerHTML = popupDates;
+        document.getElementById('ferm-popup-overlay').classList.add('visible');
+      }
       break;
     }
   } catch(e) {}

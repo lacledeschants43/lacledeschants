@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/lacledeschants43/lacledeschants/main/logo.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title id="page-title">La Clé des Chants — Buffet à volonté · La Chaise-Dieu</title>
 <meta name="description" content="Restaurant buffet à volonté français et cuisine du monde à La Chaise-Dieu, Haute-Loire. Ouvert 7j/7 de 11h45 à 14h.">
@@ -11,7 +12,9 @@
   *{box-sizing:border-box;margin:0;padding:0;}html{scroll-behavior:smooth;}body{font-family:'Lato',sans-serif;background:var(--creme);color:var(--noir);overflow-x:hidden;}
   nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:68px;transition:background .4s,box-shadow .4s;}
   nav.on{background:rgba(26,10,18,.96);box-shadow:0 2px 20px rgba(0,0,0,.3);}
-  .nl{font-family:'Playfair Display',serif;color:var(--blanc);font-size:1.15rem;letter-spacing:.04em;text-decoration:none;}
+  .nl{display:flex;align-items:center;gap:10px;text-decoration:none;}
+  .nl-logo{width:40px;height:40px;border-radius:50%;object-fit:cover;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+  .nl-txt{font-family:'Playfair Display',serif;color:var(--blanc);font-size:1.15rem;letter-spacing:.04em;}
   .nr{display:flex;gap:26px;align-items:center;}
   .nr a{color:rgba(255,255,255,.82);text-decoration:none;font-size:.77rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;transition:color .2s;}
   .nr a:hover{color:var(--or);}.nr .cta{background:var(--bx);color:var(--blanc)!important;padding:9px 20px;border-radius:6px;}
@@ -35,6 +38,7 @@
   .bp2:hover{background:rgba(255,255,255,.2);transform:translateY(-2px);}
   .hscr{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.42);font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:7px;animation:fu 1s 1.2s both;}
   .hscr::after{content:'';width:1px;height:34px;background:rgba(255,255,255,.28);animation:sl 2s ease-in-out infinite;}
+  .hero-logo{width:120px;height:120px;border-radius:50%;object-fit:cover;margin:0 auto 18px;display:block;box-shadow:0 8px 32px rgba(0,0,0,.5);border:3px solid rgba(201,168,76,.4);animation:fu 1s .1s both;}
   @keyframes sl{0%,100%{opacity:.3;transform:scaleY(.5)}50%{opacity:1;transform:scaleY(1)}}
   @keyframes fu{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
   .band{background:var(--bx);display:flex;justify-content:center;flex-wrap:wrap;}
@@ -152,7 +156,10 @@
 </head>
 <body>
 <nav id="nav">
-  <a href="/" class="nl">La Clé des Chants</a>
+  <a href="/" class="nl">
+    <img src="https://raw.githubusercontent.com/lacledeschants43/lacledeschants/main/logo.png" class="nl-logo" alt="Logo La Clé des Chants">
+    <span class="nl-txt">La Clé des Chants</span>
+  </a>
   <div class="nr">
     <a href="#concept">Le restaurant</a>
     <a href="#galerie">Galerie</a>
@@ -191,6 +198,7 @@
   <div class="hbg" id="hbg"></div>
   <div class="hov"></div>
   <div class="hc">
+    <img src="https://raw.githubusercontent.com/lacledeschants43/lacledeschants/main/logo.png" class="hero-logo" alt="Logo La Clé des Chants">
     <div class="horn" id="hero-surtitre">Buffet à volonté · La Chaise-Dieu</div>
     <h1 class="ht"><span id="hero-titre1">Une table,</span><br><em id="hero-titre2">mille saveurs</em></h1>
     <div class="hs"></div>

@@ -1510,8 +1510,6 @@ async function submitReservation() {
     $('f-nom').value=''; $('f-couverts').value='';
     $('f-heure').value=''; $('f-phone').value=''; $('f-comment').value='';
     showToast('✓ Réservation enregistrée !','success');
-    // Impression automatique du ticket de confirmation
-    imprimerConfirmation(resaData);
   } catch(e) {
     showToast('Erreur : '+e.message,'error');
   }

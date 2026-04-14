@@ -333,6 +333,15 @@
           <div class="sw"><select id="heure"><option value="">— Sans préférence —</option></select></div>
         </div>
         <div class="fg">
+          <label for="placement">Placement</label>
+          <div class="sw">
+            <select id="placement">
+              <option value="interieur" selected>🏠 Intérieur</option>
+              <option value="terrasse">☀️ Terrasse</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg">
           <label for="tel">Téléphone <span class="req">*</span></label>
           <input type="tel" id="tel" placeholder="06 xx xx xx xx" autocomplete="tel">
           <span class="ferr" id="e-tel">Veuillez saisir votre numéro de téléphone.</span>
@@ -593,12 +602,13 @@ async function soumettre() {
   $('spinner').style.display='block';
 
   const resa = {
-    nom:     $('nom').value.trim(),
-    date:    $('date').value,
-    couverts:+$('couverts').value,
-    heure:   $('heure').value||null,
-    tel:     $('tel').value.trim(),
-    comment: $('comment').value.trim()||null,
+    nom:       $('nom').value.trim(),
+    date:      $('date').value,
+    couverts:  +$('couverts').value,
+    heure:     $('heure').value||null,
+    tel:       $('tel').value.trim(),
+    comment:   $('comment').value.trim()||null,
+    placement: $('placement').value||'interieur',
   };
 
   try {
@@ -616,6 +626,7 @@ async function soumettre() {
       <div class="success-recap-row"><span class="success-recap-label">Date</span><span class="success-recap-val">${dateStr}</span></div>
       <div class="success-recap-row"><span class="success-recap-label">Heure</span><span class="success-recap-val">${resa.heure?resa.heure.replace(':','h'):'Sans préférence'}</span></div>
       <div class="success-recap-row"><span class="success-recap-label">Personnes</span><span class="success-recap-val">${resa.couverts}</span></div>
+      <div class="success-recap-row"><span class="success-recap-label">Placement</span><span class="success-recap-val">${resa.placement==='terrasse'?'☀️ Terrasse':'🏠 Intérieur'}</span></div>
       ${resa.comment?`<div class="success-recap-row"><span class="success-recap-label">Message</span><span class="success-recap-val">${resa.comment}</span></div>`:''}
     `;
     $('form-wrap').style.display='none';
@@ -631,7 +642,7 @@ async function soumettre() {
 
 function nouvelleSaisie() {
   $('nom').value=''; $('couverts').value=''; $('heure').value='';
-  $('tel').value=''; $('comment').value='';
+  $('tel').value=''; $('comment').value=''; $('placement').value='interieur';
   initCal();
   $('form-wrap').style.display='block';
   $('success-wrap').style.display='none';

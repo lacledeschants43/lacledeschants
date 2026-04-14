@@ -210,6 +210,7 @@
   .client-resa-badge.today { background: var(--or); color: var(--noir); }
 
   .clients-empty { text-align: center; padding: 48px 24px; color: var(--gris); }
+  .client-tel { font-size: 0.78rem; color: var(--bordeaux); margin-top: 3px; font-weight: 700; }
 
   /* ── PLAN DE SALLE ── */
   .salle-wrapper { max-width:1100px; margin:0 auto; padding:24px 16px 64px; }
@@ -1961,7 +1962,12 @@ function renderClients() {
   const byClient = {};
   allResas.forEach(r => {
     const key = normaliserNom(r.nom);
-    if (!byClient[key]) byClient[key] = { nom: r.nom, resas: [] };
+    if (!byClient[key]) byClient[key] = { nom: r.nom, tel: '', resas: [] };
+    // Garde le tel le plus récent non vide
+    if (r.tel && (!byClient[key].tel || r.date > (byClient[key]._lastTelDate || ''))) {
+      byClient[key].tel = r.tel;
+      byClient[key]._lastTelDate = r.date;
+    }
     byClient[key].resas.push(r);
   });
 
@@ -2012,6 +2018,7 @@ function renderClients() {
         <div class="client-info">
           <div class="client-name">${escHTML(c.nom)}</div>
           <div class="client-meta">${metaStr}</div>
+          ${c.tel ? `<div class="client-tel">📞 ${escHTML(c.tel)}</div>` : ''}
         </div>
         <div class="client-chevron">▾</div>
       </div>

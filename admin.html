@@ -2631,6 +2631,16 @@ async function desassignerTable() {
 // ── AUTO-ASSIGNATION ─────────────────────────────────────
 async function autoAssigner() {
   const dateStr = $('salle-date').value;
+
+  // DIAGNOSTIC — affiche l'état exact
+  alert(
+    'DATE: ' + (dateStr || '(vide)') + '\n' +
+    'TABLES: ' + tables.length + ' (' + tables.map(t => t.id+'/'+t.num+'/'+t.cap+'p').join(', ') + ')\n' +
+    'RESAS CE JOUR: ' + allResas.filter(r => r.date === dateStr).length + '\n' +
+    'ASSIGNMENTS ACTUELS: ' + JSON.stringify(assignments) + '\n' +
+    'allResas total: ' + allResas.length
+  );
+
   if (!dateStr) { showToast('Sélectionnez une date.', 'error'); return; }
   if (!tables.length) { showToast('Aucune table dans le plan.', 'error'); return; }
 
@@ -2653,6 +2663,14 @@ async function autoAssigner() {
 
   // Réservations déjà assignées — on ne les retouche pas
   const resasDejaAssignees = new Set(Object.values(assignments).map(Number));
+
+  alert(
+    'APRÈS loadAssignments:\n' +
+    'assignments: ' + JSON.stringify(assignments) + '\n' +
+    'tablesOccupees: ' + JSON.stringify([...tablesOccupees]) + '\n' +
+    'resasDejaAssignees: ' + JSON.stringify([...resasDejaAssignees]) + '\n' +
+    'resas à placer: ' + resas.map(r => r.nom+'('+r.couverts+'p, id='+r.id+', table_id='+r.table_id+')').join(' | ')
+  );
 
   const nouvelles = []; // { resaId, tableId }
 

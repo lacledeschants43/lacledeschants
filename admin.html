@@ -2916,8 +2916,12 @@ async function confirmerAutoAssign() {
 }
 
 // ── IMPRESSION PLAN DE SALLE ─────────────────────────────
-function imprimerPlanSalle() {
+async function imprimerPlanSalle() {
   if (!tables.length) { showToast('Aucune table à imprimer.', 'error'); return; }
+
+  // Recharger les assignments depuis allResas pour avoir l'état à jour
+  const dateStr = $('salle-date').value;
+  if (dateStr) await loadAssignments(dateStr);
 
   // Calcul bounding box des tables pour adapter le SVG
   let maxX = 0, maxY = 0;
@@ -2931,7 +2935,6 @@ function imprimerPlanSalle() {
   const W = maxX + PAD * 2;
   const H = maxY + PAD * 2;
 
-  const dateStr = $('salle-date').value;
   let titre = 'Plan de salle';
   if (dateStr) {
     const d = new Date(dateStr + 'T12:00:00');
@@ -2948,8 +2951,9 @@ function imprimerPlanSalle() {
     const tx = t.x + PAD;
     const ty = t.y + PAD;
 
-    const assignedResaId = Object.keys(assignments).find(tid => +tid === t.id);
-    const resa = assignedResaId ? allResas.find(r => r.id === assignments[+assignedResaId]) : null;
+    // Lookup direct par Number — fiable quel que soit le type
+    const resaId = assignments[Number(t.id)];
+    const resa = resaId ? allResas.find(r => r.id === resaId) : null;
 
     const isTerrace = t.type === 'terrasse';
     const isOccupee = !!resa;

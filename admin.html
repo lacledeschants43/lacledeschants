@@ -2634,6 +2634,9 @@ async function autoAssigner() {
   if (!dateStr) { showToast('Sélectionnez une date.', 'error'); return; }
   if (!tables.length) { showToast('Aucune table dans le plan.', 'error'); return; }
 
+  // Recharge les assignments depuis allResas pour avoir l'état réel
+  await loadAssignments(dateStr);
+
   const resas = allResas.filter(r => r.date === dateStr)
     .sort((a, b) => b.couverts - a.couverts); // plus grands groupes en premier
 
@@ -2649,7 +2652,7 @@ async function autoAssigner() {
   const tablesOccupees = new Set(Object.keys(assignments).map(Number));
 
   // Réservations déjà assignées — on ne les retouche pas
-  const resasDejaAssignees = new Set(Object.values(assignments));
+  const resasDejaAssignees = new Set(Object.values(assignments).map(Number));
 
   const nouvelles = []; // { resaId, tableId }
 
@@ -2701,16 +2704,11 @@ async function autoAssigner() {
   try {
     for (const { resaId, tableId } of nouvelles) {
       if (tableId > 2147483647) { showToast('ID de table invalide — recréez les tables depuis le mode Édition.', 'error'); break; }
-      console.log('[autoAssigner] apiUpdate resaId=', resaId, 'table_id=', tableId, 'types:', typeof resaId, typeof tableId);
-      const resp = await apiUpdate(resaId, { table_id: tableId });
-      console.log('[autoAssigner] réponse Supabase:', JSON.stringify(resp));
+      await apiUpdate(resaId, { table_id: tableId });
       assignments[Number(tableId)] = resaId;
       const r = allResas.find(x => x.id === resaId);
-      console.log('[autoAssigner] resa trouvée dans allResas:', r ? r.nom : 'NON TROUVÉE', '| r.id type:', r ? typeof r.id : '?');
       if (r) r.table_id = Number(tableId);
     }
-    console.log('[autoAssigner] assignments final:', JSON.stringify(assignments));
-    console.log('[autoAssigner] tables ids:', tables.map(t => t.id + '(' + typeof t.id + ')'));
     closeTablePanel();
     await renderSalle(true);
     showToast(`✓ ${nouvelles.length} réservation${nouvelles.length > 1 ? 's assignées' : ' assignée'} !`, 'success');

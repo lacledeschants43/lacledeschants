@@ -2242,6 +2242,18 @@ const DEFAULT_TABLES = [
   {id:8,num:'T8',cap:4,forme:'carre',type:'terrasse',x:130,y:260},
 ];
 
+// Migre les IDs trop grands (Date.now()) vers de petits entiers séquentiels
+function migrerIdsTablesSiNecessaire() {
+  const aGreparIds = tables.some(t => t.id > 2147483647);
+  if (!aGreparIds) return false;
+  // Réattribue des IDs séquentiels en gardant l'ordre
+  tables = tables.map((t, i) => ({ ...t, id: i + 1 }));
+  savePlanLocal();
+  savePlanRemote();
+  showToast('Plan mis à jour (IDs des tables corrigés) ✓', 'success');
+  return true;
+}
+
 async function loadPlan() {
   // Essai Supabase d'abord
   try {
@@ -2252,6 +2264,7 @@ async function loadPlan() {
       const data = await r.json();
       if (data.length && data[0].tables) {
         tables = JSON.parse(data[0].tables);
+        migrerIdsTablesSiNecessaire();
         localStorage.setItem('cdc_plan', JSON.stringify(tables)); // cache local
         return;
       }
@@ -2260,7 +2273,7 @@ async function loadPlan() {
   // Fallback localStorage
   try {
     const saved = localStorage.getItem('cdc_plan');
-    if (saved) { tables = JSON.parse(saved); return; }
+    if (saved) { tables = JSON.parse(saved); migrerIdsTablesSiNecessaire(); return; }
   } catch(e) {}
   // Plan par défaut
   tables = DEFAULT_TABLES;
@@ -2632,15 +2645,6 @@ async function desassignerTable() {
 async function autoAssigner() {
   const dateStr = $('salle-date').value;
 
-  // DIAGNOSTIC — affiche l'état exact
-  alert(
-    'DATE: ' + (dateStr || '(vide)') + '\n' +
-    'TABLES: ' + tables.length + ' (' + tables.map(t => t.id+'/'+t.num+'/'+t.cap+'p').join(', ') + ')\n' +
-    'RESAS CE JOUR: ' + allResas.filter(r => r.date === dateStr).length + '\n' +
-    'ASSIGNMENTS ACTUELS: ' + JSON.stringify(assignments) + '\n' +
-    'allResas total: ' + allResas.length
-  );
-
   if (!dateStr) { showToast('Sélectionnez une date.', 'error'); return; }
   if (!tables.length) { showToast('Aucune table dans le plan.', 'error'); return; }
 
@@ -2663,14 +2667,6 @@ async function autoAssigner() {
 
   // Réservations déjà assignées — on ne les retouche pas
   const resasDejaAssignees = new Set(Object.values(assignments).map(Number));
-
-  alert(
-    'APRÈS loadAssignments:\n' +
-    'assignments: ' + JSON.stringify(assignments) + '\n' +
-    'tablesOccupees: ' + JSON.stringify([...tablesOccupees]) + '\n' +
-    'resasDejaAssignees: ' + JSON.stringify([...resasDejaAssignees]) + '\n' +
-    'resas à placer: ' + resas.map(r => r.nom+'('+r.couverts+'p, id='+r.id+', table_id='+r.table_id+')').join(' | ')
-  );
 
   const nouvelles = []; // { resaId, tableId }
 
@@ -2721,7 +2717,6 @@ async function autoAssigner() {
 
   try {
     for (const { resaId, tableId } of nouvelles) {
-      if (tableId > 2147483647) { showToast('ID de table invalide — recréez les tables depuis le mode Édition.', 'error'); break; }
       await apiUpdate(resaId, { table_id: tableId });
       assignments[Number(tableId)] = resaId;
       const r = allResas.find(x => x.id === resaId);

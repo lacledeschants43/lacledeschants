@@ -1749,9 +1749,9 @@ const JOURS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
   $('month-total').textContent=`${monthResas.length} résa · ${totalC} couverts`;
   const byDate={};
   monthResas.forEach(r=>{(byDate[r.date]||(byDate[r.date]=[])).push(r);});
-  const firstDay=new Date(year,month,1), totalDays=new Date(year,month+1,0).getDate(), startDow=firstDay.getDay();
+  const firstDay=new Date(year,month,1), totalDays=new Date(year,month+1,0).getDate(), startDow=(firstDay.getDay()+6)%7; // 0=Lun
   let calHtml=`<div class="month-grid">`;
-  JOURS_C.forEach(j=>{calHtml+=`<div class="month-hdr">${j}</div>`;});
+  JOURS.forEach(j=>{calHtml+=`<div class="month-hdr">${j}</div>`;});
   for(let i=0;i<startDow;i++) calHtml+=`<div class="month-cell empty-cell"></div>`;
   for(let d=1;d<=totalDays;d++){
     const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;

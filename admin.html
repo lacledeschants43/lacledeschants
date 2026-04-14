@@ -604,6 +604,32 @@
   .btn-cancel { flex:1; background:none; color:var(--gris); border:1.5px solid var(--gris-clair); border-radius:6px; padding:12px; font-family:'Lato',sans-serif; font-size:0.85rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:all 0.2s; }
   .btn-cancel:hover { border-color:var(--noir); color:var(--noir); }
 
+  /* ── MODAL AUTO-ASSIGN ── */
+  .aa-row {
+    display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
+    gap:10px; padding:10px 0; border-bottom:1px solid var(--gris-clair);
+  }
+  .aa-row:last-child { border-bottom:none; }
+  .aa-resa-info { min-width:0; }
+  .aa-resa-nom { font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:700; color:var(--noir); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .aa-resa-meta { font-size:0.75rem; color:var(--gris); margin-top:2px; }
+  .aa-arrow { color:var(--gris-clair); font-size:1.1rem; flex-shrink:0; }
+  .aa-select-wrap { position:relative; }
+  .aa-select-wrap::after { content:'▾'; position:absolute; right:10px; top:50%; transform:translateY(-50%); color:var(--bordeaux); pointer-events:none; font-size:0.85rem; }
+  .aa-select-wrap select {
+    width:100%; padding:8px 28px 8px 10px; border:1.5px solid var(--gris-clair);
+    border-radius:6px; font-family:'Lato',sans-serif; font-size:0.85rem;
+    color:var(--noir); background:var(--creme); outline:none;
+    -webkit-appearance:none; appearance:none; transition:border-color 0.2s;
+  }
+  .aa-select-wrap select:focus { border-color:var(--bordeaux); background:var(--blanc); }
+  .aa-select-wrap select.doublon { border-color:var(--error); background:#fff5f5; }
+  .aa-select-wrap select.ok { border-color:var(--success); }
+  .aa-doublon-msg { font-size:0.72rem; color:var(--error); margin-top:3px; display:none; }
+  .aa-doublon-msg.visible { display:block; }
+  .aa-legend { font-size:0.78rem; color:var(--gris); margin-bottom:16px; line-height:1.5; }
+  .aa-modal { max-width:600px !important; }
+
   /* ── ONGLET SITE ── */
   .site-wrapper { max-width:900px; margin:0 auto; padding:32px 16px 64px; }
   .site-section-title { font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--bordeaux); margin:28px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--bordeaux); }
@@ -877,6 +903,19 @@
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Annuler</button>
       <button class="btn-save" onclick="saveEdit()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL AUTO-ASSIGNATION ── -->
+<div class="modal-overlay" id="aa-modal-overlay">
+  <div class="modal aa-modal">
+    <div class="modal-title">⚡ Auto-assignation des tables</div>
+    <div class="aa-legend" id="aa-legend"></div>
+    <div id="aa-rows"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="fermerModalAA()">Annuler</button>
+      <button class="btn-save" id="aa-btn-confirmer" onclick="confirmerAutoAssign()">✓ Confirmer l'assignation</button>
     </div>
   </div>
 </div>
@@ -2726,23 +2765,105 @@ async function autoAssigner() {
     return;
   }
 
-  // Confirmation
-  const msg = 'Assigner automatiquement ' + nouvelles.length + ' réservation' + (nouvelles.length > 1 ? 's' : '') + ' aux tables ?\n\n' +
-    nouvelles.map(n => {
-      const r = allResas.find(x => x.id === n.resaId);
-      const t = tables.find(x => x.id === n.tableId);
-      return '• ' + (r ? r.nom + ' (' + r.couverts + 'p)' : '?') + ' → ' + (t ? t.num + ' (' + t.cap + 'p)' : '?');
-    }).join('\n');
+  // Ouvre le modal de confirmation/modification
+  ouvrirModalAA(nouvelles);
+}
 
-  if (!confirm(msg)) return;
+// ── MODAL AUTO-ASSIGNATION ────────────────────────────────
+let _aaNouvelles = []; // état courant du modal
 
-  // Application en base
+function ouvrirModalAA(nouvelles) {
+  _aaNouvelles = nouvelles.map(n => ({ ...n })); // copie modifiable
+
+  const nb = nouvelles.length;
+  const nbSansTable = allResas.filter(r => {
+    const dateStr = $('salle-date').value;
+    return r.date === dateStr && !nouvelles.find(n => n.resaId === r.id) && !Object.values(assignments).includes(r.id);
+  }).length;
+
+  $('aa-legend').innerHTML =
+    '<strong>' + nb + ' réservation' + (nb > 1 ? 's' : '') + '</strong> à placer.' +
+    (nbSansTable ? ' <span style="color:var(--error)">' + nbSansTable + ' sans table disponible.</span>' : '') +
+    '<br>Modifiez les tables si besoin — les doublons sont signalés en rouge.';
+
+  renderRowsAA();
+  $('aa-modal-overlay').classList.add('open');
+}
+
+function renderRowsAA() {
+  const container = $('aa-rows');
+  container.innerHTML = _aaNouvelles.map((n, idx) => {
+    const resa = allResas.find(x => x.id === n.resaId);
+    const placement = resa ? (resa.placement || 'interieur') : 'interieur';
+    const placementLabel = placement === 'terrasse' ? '☀️' : '🏠';
+
+    // Options : toutes les tables, la table actuelle en premier
+    const opts = tables.map(t => {
+      const typeIcon = t.type === 'terrasse' ? '☀️' : '🏠';
+      return '<option value="' + t.id + '"' + (t.id === n.tableId ? ' selected' : '') + '>' +
+        typeIcon + ' ' + t.num + ' (' + t.cap + 'p)</option>';
+    }).join('');
+
+    return '<div class="aa-row" id="aa-row-' + idx + '">' +
+      '<div class="aa-resa-info">' +
+        '<div class="aa-resa-nom">' + escHTML(resa ? resa.nom : '?') + '</div>' +
+        '<div class="aa-resa-meta">' + placementLabel + ' · ' + (resa ? resa.couverts : '?') + ' pers.' + (resa && resa.heure ? ' · ' + resa.heure.slice(0,5).replace(':','h') : '') + '</div>' +
+      '</div>' +
+      '<div class="aa-arrow">→</div>' +
+      '<div>' +
+        '<div class="aa-select-wrap">' +
+          '<select id="aa-sel-' + idx + '" onchange="onChangeTableAA(' + idx + ')">' + opts + '</select>' +
+        '</div>' +
+        '<div class="aa-doublon-msg" id="aa-doublon-' + idx + '">⚠ Table déjà utilisée</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  verifierDoublonsAA();
+}
+
+function onChangeTableAA(idx) {
+  const newTableId = +$('aa-sel-' + idx).value;
+  _aaNouvelles[idx].tableId = newTableId;
+  verifierDoublonsAA();
+}
+
+function verifierDoublonsAA() {
+  // Compte les occurrences de chaque tableId
+  const counts = {};
+  _aaNouvelles.forEach(n => { counts[n.tableId] = (counts[n.tableId] || 0) + 1; });
+
+  let hasDoublon = false;
+  _aaNouvelles.forEach((n, idx) => {
+    const sel = $('aa-sel-' + idx);
+    const msg = $('aa-doublon-' + idx);
+    if (!sel || !msg) return;
+    const isDbl = counts[n.tableId] > 1;
+    sel.classList.toggle('doublon', isDbl);
+    sel.classList.toggle('ok', !isDbl);
+    msg.classList.toggle('visible', isDbl);
+    if (isDbl) hasDoublon = true;
+  });
+
+  // Désactiver confirmer si doublon
+  const btn = $('aa-btn-confirmer');
+  if (btn) { btn.disabled = hasDoublon; btn.style.opacity = hasDoublon ? '0.5' : '1'; }
+}
+
+function fermerModalAA() {
+  $('aa-modal-overlay').classList.remove('open');
+  _aaNouvelles = [];
+}
+
+async function confirmerAutoAssign() {
+  fermerModalAA();
+
   const btn = $('btn-auto-assign');
   btn.disabled = true;
   btn.textContent = '⏳ Assignation…';
 
   try {
-    for (const { resaId, tableId } of nouvelles) {
+    for (const { resaId, tableId } of _aaNouvelles) {
       await apiUpdate(resaId, { table_id: tableId });
       assignments[Number(tableId)] = resaId;
       const r = allResas.find(x => x.id === resaId);
@@ -2750,12 +2871,14 @@ async function autoAssigner() {
     }
     closeTablePanel();
     await renderSalle(true);
-    showToast(`✓ ${nouvelles.length} réservation${nouvelles.length > 1 ? 's assignées' : ' assignée'} !`, 'success');
+    const nb = _aaNouvelles.length;
+    showToast('✓ ' + nb + ' réservation' + (nb > 1 ? 's assignées' : ' assignée') + ' !', 'success');
   } catch(e) {
     showToast('Erreur lors de l\'auto-assignation.', 'error');
     console.error(e);
   }
 
+  _aaNouvelles = [];
   btn.disabled = false;
   btn.textContent = '⚡ Auto-assigner';
 }

@@ -1349,7 +1349,7 @@ const HEADERS = {
   'Content-Type': 'application/json',
   'Prefer': 'return=representation'
 };
-const POLL_INTERVAL = 5000; // vérification toutes les 5 secondes
+const POLL_INTERVAL = 30000; // vérification toutes les 30 secondes
 
 // ── NORMALISATION TÉLÉPHONE ──────────────────────────────
 // +33612345678 / 0033612345678 / 06 12 34 56 78 → 0612345678
@@ -1563,7 +1563,16 @@ const $ = id => document.getElementById(id);
 
 // ── API REST DIRECTE (sans librairie, contourne les extensions) ──
 async function apiGet() {
-  const r = await fetch(API_URL + '?order=date.asc,heure.asc.nullslast', { headers: HEADERS });
+  // Sélectionne toutes les colonnes nécessaires à l'affichage
+  const cols = 'id,nom,date,heure,couverts,telephone,commentaire,statut,placement,table_id,created_at';
+  const r = await fetch(API_URL + '?order=date.asc,heure.asc.nullslast&select=' + cols, { headers: HEADERS });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+async function apiGetIds() {
+  // Polling léger : seulement les colonnes utiles pour détecter les changements
+  const r = await fetch(API_URL + '?select=id,statut,nom,couverts,date&order=date.asc', { headers: HEADERS });
   if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
@@ -1823,34 +1832,45 @@ let firstLoad = true;
 
 async function poll() {
   try {
-    const data = await apiGet();
-    const newIds = new Set(data.map(r => r.id));
+    // Polling léger : on récupère seulement les infos essentielles
+    const lite = await apiGetIds();
+    const newIds = new Set(lite.map(r => r.id));
+    let needFullReload = false;
 
-    // Détecte les nouvelles réservations
     if (!firstLoad) {
-      data.forEach(r => {
+      lite.forEach(r => {
         if (!knownIds.has(r.id)) {
           // Nouvelle résa détectée !
           showToast(`🍽️ Nouvelle résa : ${r.nom} (${r.couverts} pers.)`, 'success');
-          // Si la résa est dans une autre semaine, naviguer vers elle
           const resaWeek = getWeekStart(new Date(r.date+'T12:00:00'));
           if (toDateStr(resaWeek) !== toDateStr(currentWeekStart)) {
             currentWeekStart = resaWeek;
           }
-          if ($('section-agenda').classList.contains('active')) {
-            allResas = data;
-            renderAgenda(r.id);
-          }
+          needFullReload = true;
         }
       });
+      // Détecte changement de statut
+      if (!needFullReload) {
+        lite.forEach(r => {
+          const existing = allResas.find(x => x.id === r.id);
+          if (existing && existing.statut !== r.statut) needFullReload = true;
+        });
+      }
+    } else {
+      needFullReload = true;
     }
 
     knownIds = newIds;
-    allResas = data;
+
+    // Charge les données complètes seulement si nécessaire
+    if (needFullReload) {
+      allResas = await apiGet();
+    }
+
     firstLoad = false;
 
     const now = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-    setSyncStatus('ok', `Synchronisé · ${data.length} réservation${data.length!==1?'s':''} · MAJ ${now}`);
+    setSyncStatus('ok', `Synchronisé · ${lite.length} réservation${lite.length!==1?'s':''} · MAJ ${now}`);
 
     if ($('section-agenda').classList.contains('active')) {
       renderAgenda();

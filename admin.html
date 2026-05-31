@@ -1795,7 +1795,7 @@ async function envoyerMailBrevo(resa, source='client') {
                 <tr><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;color:#6b6b6b;font-size:13px;">🕐 Heure</td><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;font-weight:700;color:#1a1a1a;">${resa.heure ? resa.heure.replace(':','h') : 'Sans préférence'}</td></tr>
                 <tr><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;color:#6b6b6b;font-size:13px;">👥 Personnes</td><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;font-weight:700;color:#1a1a1a;">${resa.couverts}</td></tr>
                 <tr><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;color:#6b6b6b;font-size:13px;">📞 Téléphone</td><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;font-weight:700;color:#1a1a1a;">${resa.tel || '—'}</td></tr>
-                ${resa.comment ? '<tr><td style="padding:10px 0;color:#6b6b6b;font-size:13px;">💬 Message</td><td style="padding:10px 0;font-style:italic;color:#1a1a1a;">' + resa.comment + '</td></tr>' : ''}
+                ${resa.commentaire ? '<tr><td style="padding:10px 0;color:#6b6b6b;font-size:13px;">💬 Message</td><td style="padding:10px 0;font-style:italic;color:#1a1a1a;">' + resa.commentaire + '</td></tr>' : ''}
               </table>
             </div>
             <div style="padding:14px 24px;background:#6B1A2A;text-align:center;">
@@ -1839,7 +1839,7 @@ async function submitReservation() {
       heure:     $('f-heure').value || null,
       tel:       $('f-phone').value.trim(),
       email:     $('f-email').value.trim() || null,
-      comment:   $('f-comment').value.trim() || null,
+      commentaire: $('f-comment').value.trim() || null,
       placement: $('f-placement').value || 'interieur',
     };
     await apiInsert(resaData);
@@ -2010,7 +2010,7 @@ function buildResaCard(r, newId=null) {
           <span class="couverts">👥 ${r.couverts} pers.</span>
           ${r.tel?`<span>📞 ${escHTML(r.tel)}</span>`:''}
         </div>
-        ${r.comment?`<div class="resa-comment">💬 ${escHTML(r.comment)}</div>`:''}
+        ${r.commentaire?`<div class="resa-comment">💬 ${escHTML(r.commentaire)}</div>`:''}
       </div>
       <div class="card-actions">
         <button class="btn-print" onclick="event.stopPropagation();imprimerParId(${r.id})">🖨️</button>
@@ -2169,9 +2169,9 @@ function openDrawer(id) {
   $('drawer-heure').textContent   = r.heure ? r.heure.slice(0,5).replace(':','h') : 'Sans préférence';
   $('drawer-couverts').textContent = r.couverts+(r.couverts>1?' personnes':' personne');
   $('drawer-tel-row').style.display     = r.tel     ? 'flex' : 'none';
-  $('drawer-comment-row').style.display = r.comment ? 'flex' : 'none';
+  $('drawer-comment-row').style.display = r.commentaire ? 'flex' : 'none';
   if (r.tel)     $('drawer-tel').textContent     = r.tel;
-  if (r.comment) $('drawer-comment').textContent = r.comment;
+  if (r.commentaire) $('drawer-comment').textContent = r.commentaire;
   $('drawer-overlay').classList.add('open');
 }
 
@@ -2216,7 +2216,7 @@ function openEdit(id) {
   $('cal-display-txt-edit').textContent = `${CAL_JOURS_LONG[d.getDay()]} ${d.getDate()} ${CAL_MOIS_LONG[d.getMonth()]} ${d.getFullYear()}`;
   calState.edit.year = d.getFullYear(); calState.edit.month = d.getMonth();
   $('edit-couverts').value=r.couverts;
-  $('edit-heure').value=r.heure||''; $('edit-tel').value=r.tel||''; $('edit-comment').value=r.comment||'';
+  $('edit-heure').value=r.heure||''; $('edit-tel').value=r.tel||''; $('edit-comment').value=r.commentaire||'';
   $('edit-placement').value=r.placement||'interieur';
   $('modal-overlay').classList.add('open');
 }
@@ -2229,7 +2229,7 @@ async function saveEdit() {
   const id=$('edit-id').value, nom=$('edit-nom').value.trim(),
         date=$('edit-date').value, couverts=+$('edit-couverts').value;
   if(!nom||!date||!couverts||couverts<1||couverts>75){showToast('Champs obligatoires manquants.','error');return;}
-  const u={nom,date,couverts,heure:$('edit-heure').value||null,tel:$('edit-tel').value.trim()||null,comment:$('edit-comment').value.trim()||null,placement:$('edit-placement').value||'interieur'};
+  const u={nom,date,couverts,heure:$('edit-heure').value||null,tel:$('edit-tel').value.trim()||null,commentaire:$('edit-comment').value.trim()||null,placement:$('edit-placement').value||'interieur'};
   try {
     await apiUpdate(id,u);
     const i=allResas.findIndex(r=>r.id==id);
@@ -2308,7 +2308,7 @@ function renderClients() {
         <div class="client-resa-date">${dateStr}</div>
         <div class="client-resa-detail">
           👥 ${r.couverts} pers.${r.heure ? ' · ' + r.heure.slice(0,5).replace(':','h') : ''}
-          ${r.comment ? `<br><em>💬 ${escHTML(r.comment)}</em>` : ''}
+          ${r.commentaire ? `<br><em>💬 ${escHTML(r.commentaire)}</em>` : ''}
         </div>
         <div class="client-resa-badge ${badge}">${badgeLabel}</div>
         <div class="client-resa-actions">
@@ -2419,7 +2419,7 @@ function buildResaCard(r, newId=null) {
           <span class="couverts">👥 ${r.couverts} pers.</span>
           ${r.tel ? `<span>📞 ${escHTML(r.tel)}</span>` : ''}
         </div>
-        ${r.comment ? `<div class="resa-comment">💬 ${escHTML(r.comment)}</div>` : ''}
+        ${r.commentaire ? `<div class="resa-comment">💬 ${escHTML(r.commentaire)}</div>` : ''}
       </div>
       <div class="card-actions">
         <button class="btn-print" onclick="event.stopPropagation();imprimerParId(${r.id})">🖨️</button>
@@ -2447,7 +2447,7 @@ function imprimerConfirmation(resa) {
           <td style="text-align:right; white-space:nowrap; font-weight:900;">${resa.couverts}p</td>
         </tr>
       </table>
-      ${resa.comment ? `<div style="font-size:22px; margin-top:4mm;">${escHTML(resa.comment)}</div>` : ''}
+      ${resa.commentaire ? `<div style="font-size:22px; margin-top:4mm;">${escHTML(resa.commentaire)}</div>` : ''}
       <div style="margin-top:12mm; border-bottom:1px solid #ccc;">&nbsp;</div>
     </div>
   `;
@@ -2488,7 +2488,7 @@ function imprimerSemaine() {
         <div class="ticket-row-name">${escHTML(r.nom)}</div>
         <div class="ticket-row-info">${r.couverts}p ${r.heure?r.heure.slice(0,5).replace(':','h'):''}</div>
       </div>`;
-      if (r.comment) html += `<div class="ticket-comment">  > ${escHTML(r.comment)}</div>`;
+      if (r.commentaire) html += `<div class="ticket-comment">  > ${escHTML(r.commentaire)}</div>`;
     });
   });
 
@@ -2518,7 +2518,7 @@ function imprimerJour(dateStr) {
           <td style="text-align:right; white-space:nowrap; font-weight:900;">${r.couverts}p</td>
         </tr>
       </table>
-      ${r.comment ? `<div style="font-size:22px; margin-top:4mm;">${escHTML(r.comment)}</div>` : ''}
+      ${r.commentaire ? `<div style="font-size:22px; margin-top:4mm;">${escHTML(r.commentaire)}</div>` : ''}
       <div style="margin-top:12mm; border-bottom:1px solid #ccc;">&nbsp;</div>
     </div>
   `).join('<div style="height:8mm;"></div>');
@@ -3626,7 +3626,7 @@ async function envoyerConfirmationClient() {
                 <tr><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;color:#6b6b6b;font-size:13px;">📅 Date</td><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;font-weight:700;color:#1a1a1a;">${dateStr}</td></tr>
                 <tr><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;color:#6b6b6b;font-size:13px;">🕐 Heure</td><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;font-weight:700;color:#1a1a1a;">${resa.heure ? resa.heure.slice(0,5).replace(':','h') : 'Sans préférence'}</td></tr>
                 <tr><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;color:#6b6b6b;font-size:13px;">👥 Personnes</td><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;font-weight:700;color:#1a1a1a;">${resa.couverts}</td></tr>
-                ${resa.comment ? `<tr><td style="padding:10px 0;color:#6b6b6b;font-size:13px;">💬 Message</td><td style="padding:10px 0;font-style:italic;color:#1a1a1a;">${resa.comment}</td></tr>` : ''}
+                ${resa.commentaire ? `<tr><td style="padding:10px 0;color:#6b6b6b;font-size:13px;">💬 Message</td><td style="padding:10px 0;font-style:italic;color:#1a1a1a;">${resa.commentaire}</td></tr>` : ''}
               </table>
               <p style="margin-top:20px;color:#555;font-size:0.9rem;line-height:1.6;">Nous vous attendons avec plaisir ! Pour toute modification, contactez-nous au <strong>04 71 57 50 69</strong>.</p>
             </div>

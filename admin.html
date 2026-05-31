@@ -3245,7 +3245,7 @@ async function initSalle() {
 // ── FERMETURES ────────────────────────────────────────────
 async function loadFermetures() {
   try {
-    const r = await fetch(FERM_URL + '?order=date.asc', { headers: HEADERS });
+    const r = await fetch(FERM_URL + '?order=date_debut.asc', { headers: HEADERS });
     if (!r.ok) throw new Error();
     fermetures = await r.json();
     // Reconstruit le Set en expandant les périodes

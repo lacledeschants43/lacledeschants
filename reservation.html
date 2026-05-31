@@ -681,7 +681,7 @@ function nouvelleSaisie() {
 // ── BANNIÈRE + POPUP FERMETURE ────────────────────────────
 async function afficherBanniereConges() {
   try {
-    const r = await fetch(FERM_URL + '?order=date.asc', { headers: HEADERS });
+    const r = await fetch(FERM_URL + '?order=date_debut.asc', { headers: HEADERS });
     if (!r.ok) return;
     const fermetures = await r.json();
     const JOURS_B = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];

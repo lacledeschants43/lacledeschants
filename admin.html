@@ -1866,37 +1866,42 @@ let firstLoad = true;
 
 async function poll() {
   try {
+    // Premier chargement : récupère directement les données complètes
+    if (firstLoad) {
+      allResas = await apiGet();
+      knownIds = new Set(allResas.map(r => r.id));
+      firstLoad = false;
+      const now = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      setSyncStatus('ok', `Synchronisé · ${allResas.length} réservation${allResas.length!==1?'s':''} · MAJ ${now}`);
+      if ($('section-agenda').classList.contains('active')) renderAgenda();
+      pollTimer = setTimeout(poll, POLL_INTERVAL);
+      return;
+    }
+
     // Polling léger : on récupère seulement les infos essentielles
     const lite = await apiGetIds();
     const newIds = new Set(lite.map(r => r.id));
     let needFullReload = false;
 
-    if (!firstLoad) {
-      lite.forEach(r => {
-        if (!knownIds.has(r.id)) {
-          // Nouvelle résa détectée !
-          showToast(`🍽️ Nouvelle résa : ${r.nom} (${r.couverts} pers.)`, 'success');
-          const resaWeek = getWeekStart(new Date(r.date+'T12:00:00'));
-          if (toDateStr(resaWeek) !== toDateStr(currentWeekStart)) {
-            currentWeekStart = resaWeek;
-          }
-          needFullReload = true;
+    lite.forEach(r => {
+      if (!knownIds.has(r.id)) {
+        showToast(`🍽️ Nouvelle résa : ${r.nom} (${r.couverts} pers.)`, 'success');
+        const resaWeek = getWeekStart(new Date(r.date+'T12:00:00'));
+        if (toDateStr(resaWeek) !== toDateStr(currentWeekStart)) {
+          currentWeekStart = resaWeek;
         }
-      });
-      // Détecte changement de statut
-      if (!needFullReload) {
-        lite.forEach(r => {
-          const existing = allResas.find(x => x.id === r.id);
-          if (existing && existing.statut !== r.statut) needFullReload = true;
-        });
+        needFullReload = true;
       }
-    } else {
-      needFullReload = true;
+    });
+    if (!needFullReload) {
+      lite.forEach(r => {
+        const existing = allResas.find(x => x.id === r.id);
+        if (existing && existing.status !== r.status) needFullReload = true;
+      });
     }
 
     knownIds = newIds;
 
-    // Charge les données complètes seulement si nécessaire
     if (needFullReload) {
       allResas = await apiGet();
     }
@@ -2423,6 +2428,8 @@ function buildResaCard(r, newId=null) {
       </div>
       <div class="card-actions">
         <button class="btn-print" onclick="event.stopPropagation();imprimerParId(${r.id})">🖨️</button>
+        ${r.email && !r.confirmation_envoyee ? `<button class="btn-confirm-mail" onclick="event.stopPropagation();ouvrirPopupConfirmation(${r.id})" title="Envoyer confirmation client">✉️ Confirmer</button>` : ''}
+        ${r.email && r.confirmation_envoyee ? `<span class="badge-confirme" title="Confirmation déjà envoyée">✅ Confirmé</span>` : ''}
         <button class="btn-edit" onclick="openEdit(${r.id})">✏️</button>
         <button class="btn-del" onclick="deleteResa(${r.id},'${escHTML(r.nom)}')">✕</button>
       </div>

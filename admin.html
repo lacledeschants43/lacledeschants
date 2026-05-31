@@ -2538,7 +2538,8 @@ async function loadPlan() {
     if (r.ok) {
       const data = await r.json();
       if (data.length && data[0].tables) {
-        tables = JSON.parse(data[0].tables);
+        const raw = data[0].tables;
+        tables = typeof raw === 'string' ? JSON.parse(raw) : raw;
         migrerIdsTablesSiNecessaire();
         localStorage.setItem('cdc_plan', JSON.stringify(tables)); // cache local
         return;

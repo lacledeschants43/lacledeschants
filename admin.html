@@ -1597,7 +1597,7 @@ const $ = id => document.getElementById(id);
 // ── API REST DIRECTE (sans librairie, contourne les extensions) ──
 async function apiGet() {
   // Sélectionne toutes les colonnes nécessaires à l'affichage
-  const cols = 'id,nom,date,heure,couverts,telephone,commentaire,statut,placement,table_id,created_at';
+  const cols = 'id,nom,date,heure,couverts,tel,comment,status,placement,table_id,created_at,email,confirmation_envoyee';
   const r = await fetch(API_URL + '?order=date.asc,heure.asc.nullslast&select=' + cols, { headers: HEADERS });
   if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
@@ -1605,7 +1605,7 @@ async function apiGet() {
 
 async function apiGetIds() {
   // Polling léger : seulement les colonnes utiles pour détecter les changements
-  const r = await fetch(API_URL + '?select=id,statut,nom,couverts,date&order=date.asc', { headers: HEADERS });
+  const r = await fetch(API_URL + '?select=id,status,nom,couverts,date&order=date.asc', { headers: HEADERS });
   if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
@@ -1839,7 +1839,7 @@ async function submitReservation() {
       heure:     $('f-heure').value || null,
       tel:       $('f-phone').value.trim(),
       email:     $('f-email').value.trim() || null,
-      commentaire: $('f-comment').value.trim() || null,
+      comment: $('f-comment').value.trim() || null,
       placement: $('f-placement').value || 'interieur',
     };
     await apiInsert(resaData);
@@ -1887,7 +1887,7 @@ async function poll() {
       if (!needFullReload) {
         lite.forEach(r => {
           const existing = allResas.find(x => x.id === r.id);
-          if (existing && existing.statut !== r.statut) needFullReload = true;
+          if (existing && existing.status !== r.status) needFullReload = true;
         });
       }
     } else {
@@ -2010,7 +2010,7 @@ function buildResaCard(r, newId=null) {
           <span class="couverts">👥 ${r.couverts} pers.</span>
           ${r.tel?`<span>📞 ${escHTML(r.tel)}</span>`:''}
         </div>
-        ${r.commentaire?`<div class="resa-comment">💬 ${escHTML(r.commentaire)}</div>`:''}
+        ${r.comment?`<div class="resa-comment">💬 ${escHTML(r.comment)}</div>`:''}
       </div>
       <div class="card-actions">
         <button class="btn-print" onclick="event.stopPropagation();imprimerParId(${r.id})">🖨️</button>
@@ -2169,9 +2169,9 @@ function openDrawer(id) {
   $('drawer-heure').textContent   = r.heure ? r.heure.slice(0,5).replace(':','h') : 'Sans préférence';
   $('drawer-couverts').textContent = r.couverts+(r.couverts>1?' personnes':' personne');
   $('drawer-tel-row').style.display     = r.tel     ? 'flex' : 'none';
-  $('drawer-comment-row').style.display = r.commentaire ? 'flex' : 'none';
+  $('drawer-comment-row').style.display = r.comment ? 'flex' : 'none';
   if (r.tel)     $('drawer-tel').textContent     = r.tel;
-  if (r.commentaire) $('drawer-comment').textContent = r.commentaire;
+  if (r.comment) $('drawer-comment').textContent = r.comment;
   $('drawer-overlay').classList.add('open');
 }
 
@@ -2216,7 +2216,7 @@ function openEdit(id) {
   $('cal-display-txt-edit').textContent = `${CAL_JOURS_LONG[d.getDay()]} ${d.getDate()} ${CAL_MOIS_LONG[d.getMonth()]} ${d.getFullYear()}`;
   calState.edit.year = d.getFullYear(); calState.edit.month = d.getMonth();
   $('edit-couverts').value=r.couverts;
-  $('edit-heure').value=r.heure||''; $('edit-tel').value=r.tel||''; $('edit-comment').value=r.commentaire||'';
+  $('edit-heure').value=r.heure||''; $('edit-tel').value=r.tel||''; $('edit-comment').value=r.comment||'';
   $('edit-placement').value=r.placement||'interieur';
   $('modal-overlay').classList.add('open');
 }
@@ -2229,7 +2229,7 @@ async function saveEdit() {
   const id=$('edit-id').value, nom=$('edit-nom').value.trim(),
         date=$('edit-date').value, couverts=+$('edit-couverts').value;
   if(!nom||!date||!couverts||couverts<1||couverts>75){showToast('Champs obligatoires manquants.','error');return;}
-  const u={nom,date,couverts,heure:$('edit-heure').value||null,tel:$('edit-tel').value.trim()||null,commentaire:$('edit-comment').value.trim()||null,placement:$('edit-placement').value||'interieur'};
+  const u={nom,date,couverts,heure:$('edit-heure').value||null,tel:$('edit-tel').value.trim()||null,comment:$('edit-comment').value.trim()||null,placement:$('edit-placement').value||'interieur'};
   try {
     await apiUpdate(id,u);
     const i=allResas.findIndex(r=>r.id==id);
@@ -2308,7 +2308,7 @@ function renderClients() {
         <div class="client-resa-date">${dateStr}</div>
         <div class="client-resa-detail">
           👥 ${r.couverts} pers.${r.heure ? ' · ' + r.heure.slice(0,5).replace(':','h') : ''}
-          ${r.commentaire ? `<br><em>💬 ${escHTML(r.commentaire)}</em>` : ''}
+          ${r.comment ? `<br><em>💬 ${escHTML(r.comment)}</em>` : ''}
         </div>
         <div class="client-resa-badge ${badge}">${badgeLabel}</div>
         <div class="client-resa-actions">
@@ -2419,7 +2419,7 @@ function buildResaCard(r, newId=null) {
           <span class="couverts">👥 ${r.couverts} pers.</span>
           ${r.tel ? `<span>📞 ${escHTML(r.tel)}</span>` : ''}
         </div>
-        ${r.commentaire ? `<div class="resa-comment">💬 ${escHTML(r.commentaire)}</div>` : ''}
+        ${r.comment ? `<div class="resa-comment">💬 ${escHTML(r.comment)}</div>` : ''}
       </div>
       <div class="card-actions">
         <button class="btn-print" onclick="event.stopPropagation();imprimerParId(${r.id})">🖨️</button>
@@ -2488,7 +2488,7 @@ function imprimerSemaine() {
         <div class="ticket-row-name">${escHTML(r.nom)}</div>
         <div class="ticket-row-info">${r.couverts}p ${r.heure?r.heure.slice(0,5).replace(':','h'):''}</div>
       </div>`;
-      if (r.commentaire) html += `<div class="ticket-comment">  > ${escHTML(r.commentaire)}</div>`;
+      if (r.comment) html += `<div class="ticket-comment">  > ${escHTML(r.comment)}</div>`;
     });
   });
 

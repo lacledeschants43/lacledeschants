@@ -479,6 +479,31 @@
   .day-view-count { font-family:'Lato',sans-serif; font-size:0.78rem; color:var(--gris); font-weight:400; }
 
   /* Cartes réservation (vues aujourd'hui + mois) */
+  .btn-confirm-mail {
+    background: #1a6b3a; color: #fff; border: none; border-radius: 6px;
+    padding: 5px 10px; font-size: 0.78rem; cursor: pointer; white-space: nowrap;
+  }
+  .btn-confirm-mail:hover { background: #145a2f; }
+  .badge-confirme { font-size: 0.78rem; color: #1a6b3a; font-weight: 600; white-space: nowrap; }
+  #popup-confirmation-mail {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
+    z-index:9999; align-items:center; justify-content:center;
+  }
+  #popup-confirmation-mail.open { display:flex; }
+  .popup-conf-box {
+    background:#fff; border-radius:14px; padding:32px; max-width:420px; width:90%;
+    box-shadow:0 8px 40px rgba(0,0,0,0.18); text-align:center;
+  }
+  .popup-conf-icon { font-size:2.5rem; margin-bottom:12px; }
+  .popup-conf-title { font-size:1.2rem; font-weight:700; color:#6B1A2A; margin-bottom:8px; }
+  .popup-conf-msg { color:#555; font-size:0.95rem; margin-bottom:20px; line-height:1.5; }
+  .popup-conf-btns { display:flex; gap:12px; justify-content:center; }
+  .popup-conf-btns button { padding:10px 24px; border-radius:8px; border:none; cursor:pointer; font-size:0.95rem; font-weight:600; }
+  .btn-popup-envoyer { background:#6B1A2A; color:#fff; }
+  .btn-popup-envoyer:hover { background:#9d102d; }
+  .btn-popup-annuler { background:#eee; color:#333; }
+  .btn-popup-annuler:hover { background:#ddd; }
+
   .resa-card {
     background:var(--blanc); border-radius:8px; padding:14px 16px; margin-bottom:8px;
     display:flex; align-items:center; gap:14px;
@@ -909,6 +934,10 @@
           </div>
         </div>
         <div class="form-group full">
+          <label for="f-email">Email client <span style="color:var(--gris);font-weight:400;">(optionnel)</span></label>
+          <input type="email" id="f-email" placeholder="client@email.com" autocomplete="off">
+        </div>
+        <div class="form-group full">
           <label for="f-comment">Commentaire</label>
           <textarea id="f-comment" placeholder="Allergie, chaise bébé, anniversaire…"></textarea>
         </div>
@@ -1325,9 +1354,13 @@
       <label>Nom</label>
       <input type="text" id="client-edit-nom" placeholder="Nom du client">
     </div>
-    <div class="form-group" style="margin-bottom:20px;">
+    <div class="form-group" style="margin-bottom:14px;">
       <label>Téléphone</label>
       <input type="tel" id="client-edit-tel" placeholder="06 xx xx xx xx">
+    </div>
+    <div class="form-group" style="margin-bottom:20px;">
+      <label>Email <span style="color:var(--gris);font-weight:400;">(optionnel)</span></label>
+      <input type="email" id="client-edit-email" placeholder="client@email.com">
     </div>
     <div style="display:flex;gap:10px;">
       <button class="btn-save" onclick="saveClientEdit()">✓ Enregistrer</button>
@@ -1805,13 +1838,14 @@ async function submitReservation() {
       couverts:  +$('f-couverts').value,
       heure:     $('f-heure').value || null,
       tel:       $('f-phone').value.trim(),
+      email:     $('f-email').value.trim() || null,
       comment:   $('f-comment').value.trim() || null,
       placement: $('f-placement').value || 'interieur',
     };
     await apiInsert(resaData);
     envoyerMailBrevo(resaData, 'admin');
     $('f-nom').value=''; $('f-couverts').value='';
-    $('f-heure').value=''; $('f-phone').value=''; $('f-comment').value='';
+    $('f-heure').value=''; $('f-phone').value=''; $('f-email').value=''; $('f-comment').value='';
     $('f-placement').value='interieur';
     initCalMain();
     showToast('✓ Réservation enregistrée !','success');
@@ -1980,6 +2014,8 @@ function buildResaCard(r, newId=null) {
       </div>
       <div class="card-actions">
         <button class="btn-print" onclick="event.stopPropagation();imprimerParId(${r.id})">🖨️</button>
+        ${r.email && !r.confirmation_envoyee ? `<button class="btn-confirm-mail" onclick="event.stopPropagation();ouvrirPopupConfirmation(${r.id})" title="Envoyer confirmation client">✉️ Confirmer</button>` : ''}
+        ${r.email && r.confirmation_envoyee ? `<span class="badge-confirme" title="Confirmation déjà envoyée">✅ Confirmé</span>` : ''}
         <button class="btn-edit" onclick="openEdit(${r.id})">✏️ Modifier</button>
         <button class="btn-del" onclick="deleteResa(${r.id},'${escHTML(r.nom)}')">✕</button>
       </div>
@@ -2223,11 +2259,16 @@ function renderClients() {
   const byClient = {};
   allResas.forEach(r => {
     const key = normaliserNom(r.nom);
-    if (!byClient[key]) byClient[key] = { nom: r.nom, tel: '', resas: [] };
+    if (!byClient[key]) byClient[key] = { nom: r.nom, tel: '', email: '', resas: [] };
     // Garde le tel le plus récent non vide
     if (r.tel && (!byClient[key].tel || r.date > (byClient[key]._lastTelDate || ''))) {
       byClient[key].tel = r.tel;
       byClient[key]._lastTelDate = r.date;
+    }
+    // Garde l'email le plus récent non vide
+    if (r.email && (!byClient[key].email || r.date > (byClient[key]._lastEmailDate || ''))) {
+      byClient[key].email = r.email;
+      byClient[key]._lastEmailDate = r.date;
     }
     byClient[key].resas.push(r);
   });
@@ -2284,9 +2325,10 @@ function renderClients() {
           <div class="client-name">${escHTML(c.nom)}</div>
           <div class="client-meta">${metaStr}</div>
           ${c.tel ? `<div class="client-tel">📞 ${escHTML(c.tel)}</div>` : ''}
+          ${c.email ? `<div class="client-tel">✉️ ${escHTML(c.email)}</div>` : ''}
         </div>
         <div class="client-card-actions">
-          <button class="btn-client-edit" onclick="event.stopPropagation();openClientEdit('${escHTML(c.nom)}','${escHTML(c.tel||'')}')" title="Modifier nom/tél">✏️ Modifier</button>
+          <button class="btn-client-edit" onclick="event.stopPropagation();openClientEdit('${escHTML(c.nom)}','${escHTML(c.tel||'')}','${escHTML(c.email||'')}')" title="Modifier">✏️ Modifier</button>
         </div>
         <div class="client-chevron">▾</div>
       </div>
@@ -2301,10 +2343,11 @@ function toggleClient(id) {
 }
 
 // ── ÉDITION CLIENT (nom / tél) ────────────────────────────
-function openClientEdit(nom, tel) {
+function openClientEdit(nom, tel, email='') {
   $('client-edit-ancien-nom').value = nom;
   $('client-edit-nom').value = nom;
   $('client-edit-tel').value = tel;
+  $('client-edit-email').value = email;
   $('modal-client-overlay').classList.add('open');
 }
 
@@ -2318,6 +2361,7 @@ async function saveClientEdit() {
   const ancienNom = $('client-edit-ancien-nom').value;
   const nouveauNom = $('client-edit-nom').value.trim();
   const nouveauTel = $('client-edit-tel').value.trim();
+  const nouvelEmail = $('client-edit-email').value.trim() || null;
 
   if (!nouveauNom) { showToast('Le nom est obligatoire.', 'error'); return; }
 
@@ -2331,13 +2375,13 @@ async function saveClientEdit() {
       fetch(API_URL + '?id=eq.' + r.id, {
         method: 'PATCH',
         headers: HEADERS,
-        body: JSON.stringify({ nom: nouveauNom, tel: nouveauTel || null })
+        body: JSON.stringify({ nom: nouveauNom, tel: nouveauTel || null, email: nouvelEmail })
       })
     ));
     // Mettre à jour localement
     resasClient.forEach(r => {
       const i = allResas.findIndex(x => x.id === r.id);
-      if (i !== -1) { allResas[i].nom = nouveauNom; allResas[i].tel = nouveauTel || null; }
+      if (i !== -1) { allResas[i].nom = nouveauNom; allResas[i].tel = nouveauTel || null; allResas[i].email = nouvelEmail; }
     });
     closeModalClient();
     renderClients();
@@ -3534,6 +3578,94 @@ if (localStorage.getItem(SESSION_KEY) === '1') {
   demarrerApp();
 }
 // Sinon on attend que l'utilisateur entre le mot de passe
+
+// ── CONFIRMATION EMAIL CLIENT ────────────────────────────
+let _confirmationResaId = null;
+
+function ouvrirPopupConfirmation(id) {
+  const resa = allResas.find(r => r.id === id);
+  if (!resa) return;
+  _confirmationResaId = id;
+  const d = new Date(resa.date + 'T12:00:00');
+  const dateStr = `${BREVO_JOURS[d.getDay()]} ${d.getDate()} ${BREVO_MOIS[d.getMonth()]} ${d.getFullYear()}`;
+  $('popup-conf-msg').innerHTML = `Envoyer la confirmation à <strong>${escHTML(resa.email)}</strong> pour la réservation de <strong>${escHTML(resa.nom)}</strong> le <strong>${dateStr}</strong> ?`;
+  $('popup-confirmation-mail').classList.add('open');
+}
+
+function fermerPopupConfirmation() {
+  $('popup-confirmation-mail').classList.remove('open');
+  _confirmationResaId = null;
+}
+
+async function envoyerConfirmationClient() {
+  const resa = allResas.find(r => r.id === _confirmationResaId);
+  if (!resa) return;
+  fermerPopupConfirmation();
+
+  try {
+    const d = new Date(resa.date + 'T12:00:00');
+    const dateStr = `${BREVO_JOURS[d.getDay()]} ${d.getDate()} ${BREVO_MOIS[d.getMonth()]} ${d.getFullYear()}`;
+
+    await fetch(BREVO_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sender:  { name: 'La Clé des Chants', email: 'lacledeschants43@gmail.com' },
+        to:      [{ email: resa.email, name: resa.nom }],
+        subject: `✅ Votre réservation est confirmée — La Clé des Chants`,
+        htmlContent: `
+          <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;border:1px solid #e8e0d8;border-radius:10px;overflow:hidden;">
+            <div style="background:#6B1A2A;padding:24px;text-align:center;">
+              <img src="https://raw.githubusercontent.com/lacledeschants43/lacledeschants/main/logo.png" style="width:70px;height:70px;border-radius:50%;margin-bottom:10px;">
+              <h2 style="color:#C9A84C;font-family:Georgia,serif;margin:0;">Réservation confirmée !</h2>
+              <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">Nous avons le plaisir de confirmer votre réservation.</p>
+            </div>
+            <div style="padding:24px;background:#FAF7F4;">
+              <table style="width:100%;border-collapse:collapse;">
+                <tr><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;color:#6b6b6b;font-size:13px;width:40%;">👤 Nom</td><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;font-weight:700;color:#1a1a1a;">${resa.nom}</td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;color:#6b6b6b;font-size:13px;">📅 Date</td><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;font-weight:700;color:#1a1a1a;">${dateStr}</td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;color:#6b6b6b;font-size:13px;">🕐 Heure</td><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;font-weight:700;color:#1a1a1a;">${resa.heure ? resa.heure.slice(0,5).replace(':','h') : 'Sans préférence'}</td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;color:#6b6b6b;font-size:13px;">👥 Personnes</td><td style="padding:10px 0;border-bottom:1px solid #e8e0d8;font-weight:700;color:#1a1a1a;">${resa.couverts}</td></tr>
+                ${resa.comment ? `<tr><td style="padding:10px 0;color:#6b6b6b;font-size:13px;">💬 Message</td><td style="padding:10px 0;font-style:italic;color:#1a1a1a;">${resa.comment}</td></tr>` : ''}
+              </table>
+              <p style="margin-top:20px;color:#555;font-size:0.9rem;line-height:1.6;">Nous vous attendons avec plaisir ! Pour toute modification, contactez-nous au <strong>04 71 57 50 69</strong>.</p>
+            </div>
+            <div style="padding:14px 24px;background:#6B1A2A;text-align:center;">
+              <p style="color:rgba(255,255,255,0.6);font-size:12px;margin:0;">La Clé des Chants · 16 La Pénide · 43160 La Chaise-Dieu</p>
+            </div>
+          </div>`
+      })
+    });
+
+    // Marquer comme confirmée en base
+    await apiUpdate(resa.id, { confirmation_envoyee: true });
+    // Mettre à jour localement
+    const idx = allResas.findIndex(r => r.id === resa.id);
+    if (idx !== -1) allResas[idx].confirmation_envoyee = true;
+
+    showToast(`✉️ Confirmation envoyée à ${resa.email}`, 'success');
+    renderAgenda();
+
+  } catch(e) {
+    showToast('Erreur envoi email : ' + e.message, 'error');
+  }
+}
 </script>
+
+<!-- ── POPUP CONFIRMATION EMAIL CLIENT ── -->
+<div id="popup-confirmation-mail">
+  <div class="popup-conf-box">
+    <div class="popup-conf-icon">✉️</div>
+    <div class="popup-conf-title">Envoyer la confirmation ?</div>
+    <div class="popup-conf-msg" id="popup-conf-msg">
+      Un email de confirmation sera envoyé au client.
+    </div>
+    <div class="popup-conf-btns">
+      <button class="btn-popup-annuler" onclick="fermerPopupConfirmation()">Annuler</button>
+      <button class="btn-popup-envoyer" onclick="envoyerConfirmationClient()">✉️ Envoyer</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

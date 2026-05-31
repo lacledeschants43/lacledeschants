@@ -363,6 +363,11 @@
           <input type="tel" id="tel" placeholder="06 xx xx xx xx" autocomplete="tel">
           <span class="ferr" id="e-tel">Veuillez saisir votre numéro de téléphone.</span>
         </div>
+        <div class="fg">
+          <label for="email">Email <span class="req">*</span></label>
+          <input type="email" id="email" placeholder="votre@email.com" autocomplete="email">
+          <span class="ferr" id="e-email">Veuillez saisir votre adresse email.</span>
+        </div>
         <div class="fg full">
           <label for="comment">Message</label>
           <textarea id="comment" placeholder="Allergie, chaise bébé, occasion spéciale…"></textarea>
@@ -618,7 +623,8 @@ async function soumettre() {
   [{id:'nom',err:'e-nom',t:v=>v.trim().length>=2},
    {id:'date',err:'e-date',t:v=>!!v},
    {id:'couverts',err:'e-couverts',t:v=>+v>=1&&+v<=75},
-   {id:'tel',err:'e-tel',t:v=>v.trim().length>=8}
+   {id:'tel',err:'e-tel',t:v=>v.trim().length>=8},
+   {id:'email',err:'e-email',t:v=>/^[^@]+@[^@]+\.[^@]+$/.test(v.trim())}
   ].forEach(c=>{
     const el=$(c.id),er=$(c.err);
     if(!c.t(el.value)){el.classList.add('inv');er.classList.add('v');ok=false;}
@@ -638,6 +644,7 @@ async function soumettre() {
     tel:       $('tel').value.trim(),
     comment:   $('comment').value.trim()||null,
     placement: $('placement').value||'interieur',
+    email:     $('email').value.trim(),
   };
 
   try {
@@ -673,7 +680,7 @@ async function soumettre() {
 
 function nouvelleSaisie() {
   $('nom').value=''; $('couverts').value=''; $('heure').value='';
-  $('tel').value=''; $('comment').value=''; $('placement').value='interieur';
+  $('tel').value=''; $('email').value=''; $('comment').value=''; $('placement').value='interieur';
   initCal();
   $('modal-confirmation').classList.remove('open');
 }

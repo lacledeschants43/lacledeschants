@@ -925,11 +925,12 @@
           <div class="select-wrap"><select id="f-heure"><option value="">— Sans préférence —</option></select></div>
         </div>
         <div class="form-group">
-          <label for="f-placement">Placement</label>
+          <label for="f-placement">Intérieur ou Terrasse</label>
           <div class="select-wrap">
             <select id="f-placement">
-              <option value="interieur" selected>🏠 Intérieur</option>
+              <option value="interieur">🏠 Intérieur</option>
               <option value="terrasse">☀️ Terrasse</option>
+              <option value="sans_preference" selected>🔀 Pas de préférence</option>
             </select>
           </div>
         </div>
@@ -1036,7 +1037,7 @@
       <div class="form-group"><label>Personnes <span class="form-required">*</span></label><input type="number" id="edit-couverts" min="1" max="75"></div>
       <div class="form-group"><label>Heure</label><div class="select-wrap"><select id="edit-heure"><option value="">— Sans préférence —</option></select></div></div>
       <div class="form-group"><label>Téléphone</label><input type="tel" id="edit-tel"></div>
-      <div class="form-group"><label>Placement</label><div class="select-wrap"><select id="edit-placement"><option value="interieur">🏠 Intérieur</option><option value="terrasse">☀️ Terrasse</option></select></div></div>
+      <div class="form-group"><label>Intérieur ou Terrasse</label><div class="select-wrap"><select id="edit-placement"><option value="interieur">🏠 Intérieur</option><option value="terrasse">☀️ Terrasse</option><option value="sans_preference">🔀 Pas de préférence</option></select></div></div>
       <div class="form-group full"><label>Commentaire</label><textarea id="edit-comment"></textarea></div>
     </div>
     <div class="modal-actions">
@@ -1841,13 +1842,13 @@ async function submitReservation() {
       tel:       $('f-phone').value.trim(),
       email:     $('f-email').value.trim() || null,
       commentaire: $('f-comment').value.trim() || null,
-      placement: $('f-placement').value || 'interieur',
+      placement: $('f-placement').value || 'sans_preference',
     };
     await apiInsert(resaData);
     envoyerMailBrevo(resaData, 'admin');
     $('f-nom').value=''; $('f-couverts').value='';
     $('f-heure').value=''; $('f-phone').value=''; $('f-email').value=''; $('f-comment').value='';
-    $('f-placement').value='interieur';
+    $('f-placement').value='sans_preference';
     initCalMain();
     showToast('✓ Réservation enregistrée !','success');
   } catch(e) {
@@ -3096,7 +3097,7 @@ function renderRowsAA() {
   container.innerHTML = _aaNouvelles.map((n, idx) => {
     const resa = allResas.find(x => x.id === n.resaId);
     const placement = resa ? (resa.placement || 'interieur') : 'interieur';
-    const placementLabel = placement === 'terrasse' ? '☀️' : '🏠';
+    const placementLabel = placement === 'terrasse' ? '☀️' : (placement === 'sans_preference' ? '🔀' : '🏠');
 
     // Options générées sans couleur ici — colorées après par colorierOptionsAA()
     const opts = tables.map(t => {

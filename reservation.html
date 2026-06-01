@@ -350,11 +350,12 @@
           <div class="sw"><select id="heure"><option value="">— Sans préférence —</option></select></div>
         </div>
         <div class="fg">
-          <label for="placement">Placement</label>
+          <label for="placement">Intérieur ou Terrasse</label>
           <div class="sw">
             <select id="placement">
-              <option value="interieur" selected>🏠 Intérieur</option>
+              <option value="interieur">🏠 Intérieur</option>
               <option value="terrasse">☀️ Terrasse</option>
+              <option value="sans_preference" selected>🔀 Pas de préférence</option>
             </select>
           </div>
         </div>
@@ -643,7 +644,7 @@ async function soumettre() {
     heure:     $('heure').value||null,
     tel:       $('tel').value.trim(),
     comment:   $('comment').value.trim()||null,
-    placement: $('placement').value||'interieur',
+    placement: $('placement').value||'sans_preference',
     email:     $('email').value.trim(),
   };
 
@@ -662,7 +663,7 @@ async function soumettre() {
       <div class="success-recap-row"><span class="success-recap-label">Date</span><span class="success-recap-val">${dateStr}</span></div>
       <div class="success-recap-row"><span class="success-recap-label">Heure</span><span class="success-recap-val">${resa.heure?resa.heure.replace(':','h'):'Sans préférence'}</span></div>
       <div class="success-recap-row"><span class="success-recap-label">Personnes</span><span class="success-recap-val">${resa.couverts}</span></div>
-      <div class="success-recap-row"><span class="success-recap-label">Placement</span><span class="success-recap-val">${resa.placement==='terrasse'?'☀️ Terrasse':'🏠 Intérieur'}</span></div>
+      <div class="success-recap-row"><span class="success-recap-label">Intérieur ou Terrasse</span><span class="success-recap-val">${resa.placement==='terrasse'?'☀️ Terrasse':(resa.placement==='sans_preference'?'🔀 Pas de préférence':'🏠 Intérieur')}</span></div>
       ${resa.comment?`<div class="success-recap-row"><span class="success-recap-label">Message</span><span class="success-recap-val">${resa.comment}</span></div>`:''}
     `;
     $('btn-resa').disabled=false;
@@ -680,7 +681,7 @@ async function soumettre() {
 
 function nouvelleSaisie() {
   $('nom').value=''; $('couverts').value=''; $('heure').value='';
-  $('tel').value=''; $('email').value=''; $('comment').value=''; $('placement').value='interieur';
+  $('tel').value=''; $('email').value=''; $('comment').value=''; $('placement').value='sans_preference';
   initCal();
   $('modal-confirmation').classList.remove('open');
 }

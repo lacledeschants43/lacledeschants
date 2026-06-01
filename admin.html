@@ -3496,7 +3496,11 @@ async function envoyerMessage() {
       headers: { ...HEADERS, 'Prefer': 'return=representation' },
       body: JSON.stringify({ contenu, printed: false })
     });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    if (!r.ok) {
+      let detail = 'HTTP ' + r.status;
+      try { const e = await r.json(); if (e && e.message) detail = e.message; } catch(_) {}
+      throw new Error(detail);
+    }
     $('msg-contenu').value = '';
     msgUpdateCount();
     showToast('✓ Message envoyé à l\'imprimante !', 'success');

@@ -1841,7 +1841,7 @@ async function submitReservation() {
       heure:     $('f-heure').value || null,
       tel:       $('f-phone').value.trim(),
       email:     $('f-email').value.trim() || null,
-      commentaire: $('f-comment').value.trim() || null,
+      comment: $('f-comment').value.trim() || null,
       placement: $('f-placement').value || 'sans_preference',
     };
     await apiInsert(resaData);
@@ -2240,7 +2240,7 @@ async function saveEdit() {
   const id=$('edit-id').value, nom=$('edit-nom').value.trim(),
         date=$('edit-date').value, couverts=+$('edit-couverts').value;
   if(!nom||!date||!couverts||couverts<1||couverts>75){showToast('Champs obligatoires manquants.','error');return;}
-  const u={nom,date,couverts,heure:$('edit-heure').value||null,tel:$('edit-tel').value.trim()||null,commentaire:$('edit-comment').value.trim()||null,placement:$('edit-placement').value||'interieur'};
+  const u={nom,date,couverts,heure:$('edit-heure').value||null,tel:$('edit-tel').value.trim()||null,comment:$('edit-comment').value.trim()||null,placement:$('edit-placement').value||'interieur'};
   try {
     await apiUpdate(id,u);
     const i=allResas.findIndex(r=>r.id==id);
